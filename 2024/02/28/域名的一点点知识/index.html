@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="MechCrafter">
+
+
+  <meta name="subtitle" content="随笔✒️、记录🗓️、学习📚">
+
+
+
+
+<title>域名解析与子域名应用指南 | JM&#39;s log 👋</title>
+
+
+
+<link rel="icon" href="/favicon.ico">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="JM's log 👋" />
+          JM&#39;s log 👋
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        域名解析与子域名应用指南
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+          <a class="hidden sm:flex" href="/category">Categories</a>
+        
+          <a class="hidden sm:flex" href="/tag">Tags</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/MechCrafter">
+                      <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+                    </a>
+                  
+                
+                <!-- <a class="w-5 h-5 hidden sm:flex" title="Github" href="rss2.xml">
+                  <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+                </a> -->
+                <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+                  <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+                </a>
+              </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/category" class="flex h-12 sm:h-auto items-center">Categories</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/tag" class="flex h-12 sm:h-auto items-center">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        域名解析与子域名应用指南
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-03-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>8 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>2.5k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <p><strong>问：一个域名可以同时解析到对象存储服务和网页服务吗</strong></p>
+<p><strong>答</strong>：通常情况下，一个域名不能同时解析到两个不同的 IP 地址或服务。DNS 解析是将域名映射到 IP 地址，一个域名通常只能映射到一个 IP 地址。</p>
+<p>然而，你可以使用子域名来实现这个目标。例如，你可以将 <code>www.example.com</code> 解析到你的网页服务器，然后将 <code>files.example.com</code> 解析到你的对象存储服务。这样，你就可以使用同一个主域名 (<code>example.com</code>) 来访问你的网页服务器和对象存储服务。</p>
+<p>另外，一些对象存储服务（如 Amazon S3）支持设置为静态网站托管，这样你可以同时在同一个服务中存储和提供网页和其他文件。你可以将你的域名解析到这个对象存储服务，然后通过不同的 URL 路径来访问你的网页和其他文件。例如，你可以访问 <code>www.example.com/index.html</code> 来查看你的网页，也可以访问 <code>www.example.com/myfile.txt</code> 来下载你的文件。</p>
+<p><strong>问：什么是一级域名，什么是二级域名</strong></p>
+<p><strong>答</strong>：一级域名（也被称为顶级域名或 TLD）是域名系统结构中的最高级别。它总是位于域名的最右边。例如，在 <code>www.example.com</code> 中，<code>.com</code> 就是一级域名。其他常见的一级域名包括 <code>.net</code>、<code>.org</code>、<code>.edu</code> 等。还有一些是特定国家或地区的一级域名，如 <code>.cn</code>（中国）、<code>.uk</code>（英国）等。</p>
+<p>二级域名是域名结构中的下一级别，位于一级域名的左边。在 <code>www.example.com</code> 中，<code>example</code> 就是二级域名。通常，当你从域名注册商购买一个域名时，你实际上是在购买一个二级域名。</p>
+<p>此外，还有更低级别的域名，如三级域名，四级域名等。例如，在 <code>www.example.com</code> 中，<code>www</code> 就是三级域名。你可以自由地为你的二级域名创建任意数量的三级域名。</p>
+<p><strong>问：那我从云服务商那儿买的域名是几级域名</strong></p>
+<p><strong>答</strong>：当你从云服务商或域名注册商那里购买域名时，你通常购买的是二级域名（Second-Level Domain，SLD）。例如，如果你购买了 <code>example.com</code>，那么 <code>example</code> 就是二级域名，而 <code>.com</code> 是顶级域名（Top-Level Domain，TLD）。</p>
+<p>你可以在购买的二级域名下创建更多级别的子域名。例如，<code>www.example.com</code> 中的 <code>www</code> 就是三级域名，它是在二级域名 <code>example.com</code> 下创建的。</p>
+<p><strong>问：那 <code>www.pan.baidu.com</code> 是几级域名</strong></p>
+<p><strong>答</strong>：在 <code>www.pan.baidu.com</code> 这个域名中：</p>
+<ul>
+<li><code>.com</code> 是顶级域名（Top-Level Domain，TLD）。</li>
+<li><code>baidu</code> 是二级域名（Second-Level Domain，SLD）。</li>
+<li><code>pan</code> 是三级域名，它是在二级域名 <code>baidu.com</code> 下创建的。</li>
+<li><code>www</code> 是四级域名，它是在三级域名 <code>pan.baidu.com</code> 下创建的。</li>
+</ul>
+<p>所以，<code>www.pan.baidu.com</code> 是一个四级域名。</p>
+<p><strong>问：那我从云服务商那儿买来一个二级域名，那我是不是可以在这个二级域名下自定义三级域名</strong></p>
+<p><strong>答</strong>：是的，你完全正确。当你拥有一个二级域名（例如 <code>example.com</code>）时，你可以在其下创建任意数量的三级域名（例如 <code>blog.example.com</code>、<code>shop.example.com</code> 等）。这些三级域名可以用来表示你网站的不同部分或服务，或者用来表示完全不同的网站。</p>
+<p>创建三级域名的具体步骤取决于你的域名注册商或 DNS 提供商。通常，你需要在你的 DNS 设置中添加一个新的记录，将你的三级域名指向一个 IP 地址或其他的域名。你应该查阅你的域名注册商或 DNS 提供商的文档，以获取更详细的指导。</p>
+<p><strong>问：那我一般可以自定义几个三级域名</strong></p>
+<p><strong>答</strong>：理论上，你可以在你的二级域名下创建无限多的三级域名。实际上，这个数量可能受到你的域名注册商或 DNS 提供商的限制，但在大多数情况下，这个数量是非常大的，足以满足绝大多数用户的需求。</p>
+<p>例如，你可以创建 <code>blog.example.com</code>、<code>shop.example.com</code>、<code>news.example.com</code> 等等。每个三级域名都可以指向不同的 IP 地址，因此可以用来托管不同的网站或服务。</p>
+<p>请注意，虽然你可以创建很多三级域名，但是管理大量的域名可能会变得复杂和困难。因此，除非有必要，否则通常建议只创建你真正需要的域名。</p>
+<p><strong>问：那我是不是可以实现以下这个场景：我买来一个二级域名，这个二级域名我用来解析到博客网站，然后再这个二级域名下自定义一个三级域名，这个三级域名我用来解析到对象存储，这个场景可以实现吗</strong></p>
+<p><strong>答</strong>：是的，你的场景完全可以实现。你可以将你的二级域名（例如 <code>example.com</code>）解析到你的博客网站，然后在这个二级域名下创建一个三级域名（例如 <code>files.example.com</code>），并将这个三级域名解析到你的对象存储服务。</p>
+<p>具体的步骤如下：</p>
+<ol>
+<li><p>在你的 DNS 设置中，为 <code>example.com</code> 添加一个 A 记录或 CNAME 记录，将其指向你的博客网站的 IP 地址或域名。</p>
+</li>
+<li><p>在你的 DNS 设置中，为 <code>files.example.com</code> 添加一个 CNAME 记录，将其指向你的对象存储服务的域名。</p>
+</li>
+<li><p>在你的对象存储服务中，可能需要配置你的存储桶以接受来自 <code>files.example.com</code> 的请求。</p>
+</li>
+</ol>
+<p>请注意，具体的步骤可能会根据你的 DNS 提供商和对象存储服务有所不同。你应该查阅你的 DNS 提供商和对象存储服务的文档，以获取更详细的指导。</p>
+<p><strong>问：一个域名只能解析到一个存储桶上吗</strong></p>
+<p><strong>答</strong>：是的，一个域名通常只能解析到一个存储桶。当你为一个存储桶配置自定义域名时，DNS 解析会将该域名指向存储桶的地址。因此，如果你尝试将同一个域名解析到另一个存储桶，可能会出现冲突。</p>
+<p>如果你希望使用同一个域名访问多个存储桶，你可能需要使用一些其他的方法。例如，你可以设置一个反向代理服务器，根据请求的路径或其他参数将请求路由到不同的存储桶。或者，你可以使用子域名，每个子域名解析到一个不同的存储桶。</p>
+<p>请注意，这些方法可能需要额外的配置和管理，可能会增加复杂性和成本。在决定如何配置你的存储桶和域名时，你应该考虑你的具体需求和资源。</p>
+<p><strong>问：对象存储存储桶的静态网站是什么</strong></p>
+<p><strong>答</strong>：对象存储的静态网站功能允许你直接从存储桶中托管静态网站。静态网站是由 HTML、CSS、JavaScript、图片等静态文件组成的网站，不需要服务器端的动态处理。</p>
+<p>当你启用了存储桶的静态网站功能后，你可以将你的静态网站文件上传到存储桶，然后通过存储桶的 URL 直接访问这些文件。你可以设置一个默认的首页（例如 <code>index.html</code>），也可以设置一个显示错误信息的页面（例如 <code>error.html</code>）。</p>
+<p>这种方式的优点是简单、易用，不需要管理 web 服务器。此外，由于静态文件可以通过 CDN 分发，访问速度也很快。</p>
+<p>然而，静态网站功能只能用于静态内容，不能处理服务器端的动态内容。如果你的网站需要服务器端的处理（例如，用户认证、数据库访问等），那么你可能需要使用更复杂的托管解决方案，如云服务器或云函数。</p>
+<p><strong>问：也就是说可以通过对象储存来搭建一个静态网站</strong></p>
+<p><strong>答</strong>：是的，你完全可以使用对象存储（例如腾讯云的 COS，亚马逊的 S3，谷歌的 Cloud Storage 等）来托管一个静态网站。这种方式的优点是简单、易用，不需要管理 web 服务器，而且成本低。</p>
+<p>以下是一般的步骤：</p>
+<ol>
+<li><p><strong>创建存储桶</strong>：在你选择的对象存储服务中创建一个新的存储桶。</p>
+</li>
+<li><p><strong>上传文件</strong>：将你的静态网站文件（如 HTML、CSS、JavaScript 文件和图片等）上传到你的存储桶。</p>
+</li>
+<li><p><strong>启用静态网站托管</strong>：在存储桶的设置中，找到静态网站托管（或类似）的选项，并启用它。你可能需要设置一个默认的首页（通常是 <code>index.html</code>）和一个错误页面（如 <code>404.html</code>）。</p>
+</li>
+<li><p><strong>设置权限</strong>：确保你的存储桶和你的文件对公众可读，否则人们将无法访问你的网站。</p>
+</li>
+<li><p><strong>访问你的网站</strong>：你现在可以通过存储桶的 URL 来访问你的网站了。如果你希望使用自定义域名，你需要在你的 DNS 提供商那里将你的域名解析到你的存储桶。</p>
+</li>
+</ol>
+<p>请注意，这只适用于静态网站，也就是说，你的网站只包含 HTML、CSS、JavaScript、图片等静态文件，不包含任何服务器端的动态处理（如 PHP、ASP.NET、Java 等）。如果你的网站需要服务器端的处理，你可能需要使用云服务器或其他类型的托管服务。</p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/AI%E7%94%9F%E6%88%90/">AI生成</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/%E5%9F%9F%E5%90%8D/">域名</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2024/02/29/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          正则表达式
+        </a>
+      
+    </div>
+    <div>
+      
+        <a href="/2024/02/28/OpenSSL-%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          OpenSSL 简单入门
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+  <!-- FILEPATH: /D:/workspace/myblog/themes/maple/layout/_partial/footer.ejs -->
+  <!-- BEGIN: ed8c6549bwf9 -->
+  <!-- share button -->
+  <div class="flex items-center gap-2">
+    <span>Share:</span>
+    <a href="https://www.facebook.com/sharer.php?u=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+    <a href="https://twitter.com/intent/tweet?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+    <a href="https://www.linkedin.com/shareArticle?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="https://t.me/share/url?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+  </div>
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <span>© 2024</span>
+    <a href="mailto:mylinkmail@foxmail.com" rel="noopener noreferrer">📫</a>
+  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Buttons</title>
+    
+    <!-- 引入 Font Awesome 图标样式 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <style>
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- 脚本 -->
+    <script>
+      var currentUrl = window.location.href;
+      document.querySelector('a[href="https://www.facebook.com/sharer.php?u=http://example.com"]').href = 'https://www.facebook.com/sharer.php?u=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://twitter.com/intent/tweet?url=http://example.com"]').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://www.linkedin.com/shareArticle?url=http://example.com"]').href = 'https://www.linkedin.com/shareArticle?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://t.me/share/url?url=http://example.com"]').href = 'https://t.me/share/url?url=' + encodeURIComponent(currentUrl);
+    </script>
+  </body>
+  </html>
+  <!-- END: ed8c6549bwf9 -->
+</html>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "0";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>

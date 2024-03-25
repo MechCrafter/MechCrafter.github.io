@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="MechCrafter">
+
+
+  <meta name="subtitle" content="随笔✒️、记录🗓️、学习📚">
+
+
+
+
+<title>git-crypt教程 | JM&#39;s log 👋</title>
+
+
+
+<link rel="icon" href="/favicon.ico">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="JM's log 👋" />
+          JM&#39;s log 👋
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        git-crypt教程
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+          <a class="hidden sm:flex" href="/category">Categories</a>
+        
+          <a class="hidden sm:flex" href="/tag">Tags</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/MechCrafter">
+                      <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+                    </a>
+                  
+                
+                <!-- <a class="w-5 h-5 hidden sm:flex" title="Github" href="rss2.xml">
+                  <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+                </a> -->
+                <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+                  <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+                </a>
+              </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/category" class="flex h-12 sm:h-auto items-center">Categories</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/tag" class="flex h-12 sm:h-auto items-center">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        git-crypt教程
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-03-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>6 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>1.3k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <h1 id="git-crypt-transparent-file-encryption-in-git"><a href="#git-crypt-transparent-file-encryption-in-git" class="headerlink" title="git-crypt - transparent file encryption in git"></a>git-crypt - transparent file encryption in git</h1><p>从 git-crypt 的<a target="_blank" rel="noopener" href="https://github.com/AGWA/git-crypt/blob/master/README.md">官方文档</a>中可知：</p>
+<p><code>git-crypt</code> 使用 AES-256 在 CTR 模式下对文件进行加密，并且使用基于文件 SHA-1 HMAC 生成的合成初始化向量（IV）。这种操作模式在确定性选择明文攻击下被证明具有语义安全性，确保除了判断两个文件是否完全相同之外，不会泄露其他任何信息。</p>
+<p><code>git-crypt</code> 是结合了 GPG（GNU Privacy Guard）和 AES 加密技术的一个工具。它允许通过 GPG 公钥/私钥系统来管理和分发加密密钥，从而实现对 Git 仓库中特定文件的安全保护。对于每个需要加密的文件，<code>git-crypt</code> 利用 AES-256 加密算法在 CTR 模式下进行加密，以保证数据安全。</p>
+<p>当与他人共享仓库时，可以通过 GPG 公钥为不同的用户提供访问权限，添加 GPG 用户后，会在仓库根目录下的 <code>.git-crypt</code> 文件夹内添加一个 GPG 加密的密钥文件。此外，<code>git-crypt</code> 还支持使用对称密钥的方式，这种方式下，用户需安全地将密钥传达给协作者，不依赖于 GPG。</p>
+<p>因此，git-crypt 在实际应用中整合了 GPG 的密钥管理和 AES 加密算法，实现了透明的文件加密与解密功能，使得在版本控制的同时能够保护敏感信息的安全。</p>
+<p>也就是说，<code>git-crypt</code> 是将 GPG 和 AES 结合的项目，GPG 来管理用户权限，AES 来加密文件</p>
+<h1 id="环境配置（Windows）"><a href="#环境配置（Windows）" class="headerlink" title="环境配置（Windows）"></a>环境配置（Windows）</h1><p>安装</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gpg4win.org/">gpg4win</a></li>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/">git</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/AGWA/git-crypt">git-crypt</a></li>
+</ul>
+<p>要把从 <a target="_blank" rel="noopener" href="https://github.com/AGWA/git-crypt/releases">git-crypt</a> 下载的 <code>git-crypt-0.7.0-x86_64.exe</code> 重命名为 <code>git-crypt.exe</code>，否则检测不到环境变量</p>
+<p>把 <code>git-crypt.exe</code> 放到 <code>git\bin</code> 目录下</p>
+<p><strong>查看环境</strong>：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gpg --version</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">gpg (GnuPG) 2.4.3</span><br><span class="line">libgcrypt 1.10.2</span><br><span class="line">Copyright (C) 2023 g10 Code GmbH</span><br><span class="line">License GNU GPL-3.0-or-later &lt;https://gnu.org/licenses/gpl.html&gt;</span><br><span class="line">This is free software: you are free to change and redistribute it.</span><br><span class="line">There is NO WARRANTY, to the extent permitted by law.</span><br><span class="line"></span><br><span class="line">Home: C:\Users\atlas\AppData\Roaming\gnupg</span><br><span class="line">Supported algorithms:</span><br><span class="line">Pubkey: RSA, ELG, DSA, ECDH, ECDSA, EDDSA</span><br><span class="line">Cipher: IDEA, 3DES, CAST5, BLOWFISH, AES, AES192, AES256, TWOFISH,</span><br><span class="line">        CAMELLIA128, CAMELLIA192, CAMELLIA256</span><br><span class="line">Hash: SHA1, RIPEMD160, SHA256, SHA384, SHA512, SHA224</span><br><span class="line">Compression: Uncompressed, ZIP, ZLIB, BZIP2</span><br></pre></td></tr></tbody></table></figure>
+
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git --vesion</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git version 2.42.0.windows.1</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt --version</span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt 0.7.0</span><br></pre></td></tr></tbody></table></figure>
+
+<h1 id="git-crypt-使用步骤"><a href="#git-crypt-使用步骤" class="headerlink" title="git-crypt 使用步骤"></a><code>git-crypt</code> 使用步骤</h1><ol>
+<li>git 初始化</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="2">
+<li>创建 <code>.gitattributes</code> 追踪文件</li>
+</ol>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.gitattributes</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="3">
+<li>在 <code>.gitattributes</code>  中输入配置：</li>
+</ol>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">*.md filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.xlsx filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.jpg filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.png filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line"># 加密指定文件夹下的md文件</span><br><span class="line">Test/*.md filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line"># 加密指定文件夹下的所有文件</span><br><span class="line">Test/** filter=git-crypt diff=git-crypt</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="4">
+<li>提交 <code>.gitattributes</code> 文件</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git add .gitattributes</span><br></pre></td></tr></tbody></table></figure>
+
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m add.gitattributes</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="5">
+<li>生成 <code>gpg</code> 密钥（推荐在 <code>kleopatra</code> 中生成，因为有 GUI）</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gpg2 --full-gen-key      &lt; 2.1.17</span><br><span class="line">gpg --full-generate-key  &gt;= 2.1.17</span><br></pre></td></tr></tbody></table></figure>
+
+<figure class="highlight shell"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">gpg (GnuPG) 2.4.3; Copyright (C) 2023 g10 Code GmbH</span><br><span class="line">This is free software: you are free to change and redistribute it.</span><br><span class="line">There is NO WARRANTY, to the extent permitted by law.</span><br><span class="line"></span><br><span class="line">Please select what kind of key you want:</span><br><span class="line">   (1) RSA and RSA</span><br><span class="line">   (2) DSA and Elgamal</span><br><span class="line">   (3) DSA (sign only)</span><br><span class="line">   (4) RSA (sign only)</span><br><span class="line">   (9) ECC (sign and encrypt) *default*</span><br><span class="line">  (10) ECC (sign only)</span><br><span class="line">  (14) Existing key from card</span><br><span class="line">Your selection? 1           &lt;--选择密钥类型</span><br><span class="line">RSA keys may be between 1024 and 4096 bits long.</span><br><span class="line">What keysize do you want? (3072)         &lt;--选择密钥长度，在 1024到4096 之间，默认为 3072</span><br><span class="line">Requested keysize is 3072 bits</span><br><span class="line">Please specify how long the key should be valid.</span><br><span class="line">         0 = key does not expire</span><br><span class="line">      &lt;n&gt;  = key expires in n days    &lt;-- &lt;n&gt;  = 密钥在 n 天后过期</span><br><span class="line">      &lt;n&gt;w = key expires in n weeks   &lt;-- &lt;n&gt;w = 密钥在 n 周后过期</span><br><span class="line">      &lt;n&gt;m = key expires in n months  &lt;-- &lt;n&gt;m = 密钥在 n 月后过期</span><br><span class="line">      &lt;n&gt;y = key expires in n years   &lt;-- &lt;n&gt;y = 密钥在 n 年后过期</span><br><span class="line">Key is valid for? (0)     &lt;--选择密钥有效期</span><br><span class="line">Key does not expire at all</span><br><span class="line">Is this correct? (y/N)   &lt;--确认</span><br><span class="line"></span><br><span class="line">GnuPG needs to construct a user ID to identify your key.</span><br><span class="line"></span><br><span class="line">Real name: YOUR_NAME      &lt;--输入密钥名称</span><br><span class="line">Email address: test@test.com       &lt;--输入密钥邮箱</span><br><span class="line">Comment: test          &lt;--输入密钥注释</span><br><span class="line">You are using the 'utf-8' character set.</span><br><span class="line">You selected this USER-ID:</span><br><span class="line">    "YOUR_NAME (test) &lt;test@test.com&gt;"</span><br><span class="line"></span><br><span class="line">Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o  &lt;--最终确认，如果你想修改密钥名称则输入 n，以此类推，最终确认则输入 o</span><br><span class="line">We need to generate a lot of random bytes. It is a good idea to perform</span><br><span class="line">some other action (type on the keyboard, move the mouse, utilize the</span><br><span class="line">disks) during the prime generation; this gives the random number</span><br><span class="line">generator a better chance to gain enough entropy.    &lt;--这一步输入密钥密码</span><br><span class="line">gpg: revocation certificate stored as 'C:\\Users\\user\\AppData\\Roaming\\gnupg\\openpgp-revocs.d\\095A4F5A6125D5EB02FE5CB824B8F8F7EAFFD84D.rev'</span><br><span class="line">public and secret key created and signed.</span><br><span class="line"></span><br><span class="line">pub   rsa3072 2024-02-25 [SC]</span><br><span class="line">      095A4F5A6125D5EB02FE5CB824B8F8F7EAFFD84D</span><br><span class="line">uid                      YOUR_NAME (test) &lt;test@test.com&gt;</span><br><span class="line">sub   rsa3072 2024-02-25 [E]</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="6">
+<li><code>git-crypt</code> 初始化</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt init</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="7">
+<li>把第五步生成的密钥导入仓库</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt add-gpg-user &lt;gpg pub uid&gt;</span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="8">
+<li>正常提交文件</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git add .</span><br></pre></td></tr></tbody></table></figure>
+
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git commit -m <span class="string">"all file"</span></span><br></pre></td></tr></tbody></table></figure>
+
+<ol start="9">
+<li>本地加密</li>
+</ol>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt lock</span><br></pre></td></tr></tbody></table></figure>
+<p>解密</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt unlock</span><br></pre></td></tr></tbody></table></figure>
+<hr>
+<p><code>.gitattributes</code> 文件配置解释:</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">*.md filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.xlsx filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.jpg filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line">*.png filter=git-crypt diff=git-crypt</span><br><span class="line"></span><br><span class="line"># 加密指定文件夹下的 md 文件</span><br><span class="line">Test/*.md filter=git-crypt diff=git-crypt</span><br></pre></td></tr></tbody></table></figure>
+
+<p>意思是 <code>.md</code> <code>.xlsx</code> <code>.jpg</code> <code>.png</code> 文件是被加密文件</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git-crypt status  //查看加密情况</span><br></pre></td></tr></tbody></table></figure>
+
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ git-crypt status</span><br><span class="line">not encrypted: .gitattributes</span><br><span class="line">    encrypted: secretfile</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这表示 <code>secretfile</code> 被加密，而 <code>.gitattributes</code> 没有被加密。</p>
+<p><strong>推荐阅读：</strong></p>
+<p><a target="_blank" rel="noopener" href="https://help.gitee.com/repository/ssh-key/how-to-use-gpg-with-gitee">GPG 密钥生成 | Gitee</a></p>
+<p><a target="_blank" rel="noopener" href="https://ruanyifeng.com/blog/2013/07/gpg.html">GPG入门教程 - 阮一峰的网络日志 </a></p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/git-crypt/">git-crypt</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/GPG/">GPG</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2024/03/25/%E6%88%91%E7%9A%84-obsidian-%E7%AC%94%E8%AE%B0%E5%A4%87%E4%BB%BD%E6%96%B9%E6%B3%95/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          obsidian 笔记备份历程
+        </a>
+      
+    </div>
+    <div>
+      
+        <a href="/2024/03/10/ffmpeg-%E7%9A%84%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          ffmpeg-的常用命令
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+  <!-- FILEPATH: /D:/workspace/myblog/themes/maple/layout/_partial/footer.ejs -->
+  <!-- BEGIN: ed8c6549bwf9 -->
+  <!-- share button -->
+  <div class="flex items-center gap-2">
+    <span>Share:</span>
+    <a href="https://www.facebook.com/sharer.php?u=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+    <a href="https://twitter.com/intent/tweet?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+    <a href="https://www.linkedin.com/shareArticle?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="https://t.me/share/url?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+  </div>
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <span>© 2024</span>
+    <a href="mailto:mylinkmail@foxmail.com" rel="noopener noreferrer">📫</a>
+  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Buttons</title>
+    
+    <!-- 引入 Font Awesome 图标样式 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <style>
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- 脚本 -->
+    <script>
+      var currentUrl = window.location.href;
+      document.querySelector('a[href="https://www.facebook.com/sharer.php?u=http://example.com"]').href = 'https://www.facebook.com/sharer.php?u=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://twitter.com/intent/tweet?url=http://example.com"]').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://www.linkedin.com/shareArticle?url=http://example.com"]').href = 'https://www.linkedin.com/shareArticle?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://t.me/share/url?url=http://example.com"]').href = 'https://t.me/share/url?url=' + encodeURIComponent(currentUrl);
+    </script>
+  </body>
+  </html>
+  <!-- END: ed8c6549bwf9 -->
+</html>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "0";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>

@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="MechCrafter">
+
+
+  <meta name="subtitle" content="随笔✒️、记录🗓️、学习📚">
+
+
+
+
+<title>正则表达式 | JM&#39;s log 👋</title>
+
+
+
+<link rel="icon" href="/favicon.ico">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="JM's log 👋" />
+          JM&#39;s log 👋
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        正则表达式
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+          <a class="hidden sm:flex" href="/category">Categories</a>
+        
+          <a class="hidden sm:flex" href="/tag">Tags</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/MechCrafter">
+                      <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+                    </a>
+                  
+                
+                <!-- <a class="w-5 h-5 hidden sm:flex" title="Github" href="rss2.xml">
+                  <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+                </a> -->
+                <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+                  <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+                </a>
+              </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/category" class="flex h-12 sm:h-auto items-center">Categories</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/tag" class="flex h-12 sm:h-auto items-center">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        正则表达式
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-03-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>26 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>7.5k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <p>学习正则表达式是理解和利用文本处理和搜索的重要工具之一。以下是一个简单的学习大纲，可以帮助你逐步掌握正则表达式的基础知识和进阶应用：</p>
+<ul>
+<li><strong>初级阶段</strong></li>
+</ul>
+<ol>
+<li><p><strong>了解正则表达式的基本概念</strong></p>
+<ul>
+<li>什么是正则表达式？</li>
+<li>为什么要使用正则表达式？</li>
+<li>正则表达式的作用和应用场景</li>
+</ul>
+</li>
+<li><p><strong>掌握基本语法和元字符</strong></p>
+<ul>
+<li>学习常见的元字符（如<code>.</code>、<code>*</code>、<code>+</code>、<code>?</code>等）的含义和用法</li>
+<li>了解字符类<code>[]</code>和排除字符字类<code>[^]</code>的使用</li>
+<li>理解元字符的贪婪匹配和非贪婪匹配</li>
+</ul>
+</li>
+<li><p><strong>学习基本的匹配模式</strong></p>
+<ul>
+<li>使用<code>.</code>匹配任意字符</li>
+<li>使用字符类<code>[]</code>匹配指定范围的字符</li>
+<li>使用元字符<code>*</code>、<code>+</code>、<code>?</code>进行重复匹配</li>
+<li>使用锚点<code>^</code>和<code>$</code>匹配行的开头和结尾</li>
+</ul>
+</li>
+<li><p><strong>练习和实践</strong></p>
+<ul>
+<li>在在线工具或文本编辑器中练习编写简单的正则表达式，如匹配邮箱地址、电话号码等。</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><strong>中级阶段</strong></li>
+</ul>
+<ol start="5">
+<li><p><strong>深入理解分组和捕获</strong></p>
+<ul>
+<li>学习如何使用小括号<code>()</code>进行分组](#学习如何使用小括号进行分组)。</li>
+<li>理解捕获组的概念和用法](#理解捕获组的概念和用法)。</li>
+<li>学习如何引用捕获组](#学习如何引用捕获组)。</li>
+</ul>
+</li>
+<li><p><strong>掌握常用的预定义字符类</strong></p>
+<ul>
+<li>学习如何使用<code>\d</code>、<code>\w</code>、<code>\s</code>等预定义字符类匹配数字、字母、空白字符等</li>
+</ul>
+</li>
+<li><p><strong>了解量词的贪婪与非贪婪</strong></p>
+<ul>
+<li>深入理解量词<code>*</code>、<code>+</code>、<code>?</code>的贪婪匹配和非贪婪匹配</li>
+</ul>
+</li>
+<li><p><strong>学习反向引用</strong></p>
+<ul>
+<li>掌握如何使用<code>\1</code>、<code>\2</code>等反向引用捕获组</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><strong>高级阶段</strong></li>
+</ul>
+<ol start="9">
+<li><p><strong>学习零宽断言</strong></p>
+<ul>
+<li>了解零宽断言的概念和分类（如正向先行断言、负向先行断言等）。</li>
+<li>学习如何在正则表达式中应用零宽断言。</li>
+</ul>
+</li>
+<li><p><strong>掌握更复杂的匹配模式</strong></p>
+<ul>
+<li>学习如何处理重复出现的子模式，如匹配嵌套结构等。</li>
+</ul>
+</li>
+<li><p><strong>了解并使用模式修饰符</strong></p>
+<ul>
+<li>学习如何在正则表达式中使用修饰符，如忽略大小写、多行模式等。</li>
+</ul>
+</li>
+<li><p><strong>练习和实践</strong></p>
+<ul>
+<li>在实际项目中应用正则表达式，如日志分析、数据清洗等场景。</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><strong>进阶阶段</strong></li>
+</ul>
+<ol start="13">
+<li><p><strong>学习优化和性能调优</strong></p>
+<ul>
+<li>了解正则表达式的性能影响因素。</li>
+<li>学习如何优化复杂正则表达式以提高性能。</li>
+</ul>
+</li>
+<li><p><strong>了解其他编程语言中的正则表达式支持</strong></p>
+<ul>
+<li>探索其他编程语言（如Python、JavaScript、Java等）中正则表达式的语法和特性。</li>
+</ul>
+</li>
+<li><p><strong>实践项目</strong></p>
+<ul>
+<li>参与实际项目并利用正则表达式解决实际问题，如网站爬虫、文本分析等。</li>
+</ul>
+</li>
+<li><p><strong>持续学习与实践</strong></p>
+<ul>
+<li>跟踪正则表达式技术的最新发展和应用，不断扩展和提升自己的技能。</li>
+</ul>
+</li>
+</ol>
+<p>以上是一个大致的学习路线，你可以根据自己的学习进度和需求来安排学习计划，并结合实际项目进行练习和实践，以更好地掌握正则表达式的应用。</p>
+<h1 id="初级阶段"><a href="#初级阶段" class="headerlink" title="初级阶段"></a>初级阶段</h1><h2 id="了解正则表达式的基本概念"><a href="#了解正则表达式的基本概念" class="headerlink" title="了解正则表达式的基本概念"></a>了解正则表达式的基本概念</h2><h3 id="什么是正则表达式？"><a href="#什么是正则表达式？" class="headerlink" title="什么是正则表达式？"></a><strong>什么是正则表达式？</strong></h3><p>正则表达式（Regular Expression，简称 Regex 或 RegExp）是一种用于描述字符模式的强大工具。它是由普通字符（例如字母、数字、空格等）和特殊字符（称为元字符）组成的字符串，用来匹配和搜索文本中的特定模式或字符序列。</p>
+<p>正则表达式在文本处理、搜索和替换等领域有着广泛的应用，它可以用来实现各种文本处理任务，包括验证输入的格式、提取特定的信息、过滤文本等。通过灵活地组合普通字符和元字符，可以构建出复杂的匹配规则，使得正则表达式成为处理文本的强大工具。</p>
+<p>举例来说，一个简单的正则表达式 <code>\d{3}-\d{3}-\d{4}</code> 可以用来匹配美国的电话号码格式，其中 <code>\d</code> 表示匹配任意数字，<code>{3}</code> 表示匹配前面的模式恰好三次，<code>-</code> 表示匹配破折号。因此，这个正则表达式可以匹配形如 “123-456-7890” 的电话号码。</p>
+<p>总之，正则表达式是一种强大而灵活的工具，可以帮助程序员和数据处理人员轻松地处理和操纵文本数据。</p>
+<h3 id="为什么要使用正则表达式？"><a href="#为什么要使用正则表达式？" class="headerlink" title="为什么要使用正则表达式？"></a><strong>为什么要使用正则表达式？</strong></h3><p>使用正则表达式有以下几个主要原因：</p>
+<ol>
+<li><p><strong>灵活性和强大性：</strong> 正则表达式提供了一种灵活、强大且高效的文本匹配和处理机制。通过正则表达式，可以描述和匹配各种复杂的文本模式，从而实现各种文本处理任务。</p>
+</li>
+<li><p><strong>文本搜索和替换：</strong> 正则表达式可以用于在文本中搜索指定的模式，并对匹配的文本进行替换、删除、提取等操作。这在处理大量文本数据时非常有用，可以提高搜索和替换的效率。</p>
+</li>
+<li><p><strong>格式验证和数据提取：</strong> 正则表达式可以用于验证输入的格式是否符合指定的要求，例如邮箱地址、电话号码、身份证号码等。同时，也可以从文本中提取出符合特定模式的信息，如提取网页中的链接、提取日志中的关键信息等。</p>
+</li>
+<li><p><strong>跨平台和多语言支持：</strong> 正则表达式是一种通用的文本处理工具，几乎所有主流的编程语言和操作系统都提供了对正则表达式的支持。因此，无论你使用哪种编程语言或操作系统，都可以方便地使用正则表达式来处理文本数据。</p>
+</li>
+<li><p><strong>简洁和高效：</strong> 正则表达式通常比手动编写复杂的文本处理代码更加简洁和高效。一行或几行正则表达式就可以实现复杂的文本匹配和处理，大大提高了开发效率和代码可读性。</p>
+</li>
+</ol>
+<p>综上所述，正则表达式是一种强大而灵活的文本处理工具，可以帮助程序员和数据处理人员轻松地处理各种文本数据，提高工作效率和代码质量。</p>
+<h3 id="正则表达式的作用和应用场景"><a href="#正则表达式的作用和应用场景" class="headerlink" title="正则表达式的作用和应用场景"></a><strong>正则表达式的作用和应用场景</strong></h3><p>正则表达式在各种领域都有广泛的应用，其主要作用和应用场景包括但不限于以下几个方面：</p>
+<ol>
+<li><p><strong>文本搜索和匹配：</strong> 正则表达式可以用于在文本中搜索指定的模式或匹配特定的字符序列。例如，可以使用正则表达式来查找包含特定关键词的文本、匹配邮箱地址、匹配电话号码等。</p>
+</li>
+<li><p><strong>数据提取和抽取：</strong> 正则表达式可以从文本中提取出符合特定模式的信息。例如，可以使用正则表达式从网页源代码中提取链接、从日志文件中提取关键信息等。</p>
+</li>
+<li><p><strong>格式验证和数据清洗：</strong> 正则表达式可以用于验证输入的格式是否符合指定的要求，并对数据进行清洗和预处理。例如，可以使用正则表达式验证用户输入的邮箱地址、电话号码、身份证号码等是否合法，并对其进行格式化或修复。</p>
+</li>
+<li><p><strong>文本替换和修改：</strong> 正则表达式可以对文本进行替换、修改或删除操作。例如，可以使用正则表达式来将文本中的特定字符串替换为其他字符串、删除文本中的空白字符、修复文本中的格式错误等。</p>
+</li>
+<li><p><strong>日志分析和数据挖掘：</strong> 正则表达式在日志分析和数据挖掘领域也有广泛的应用。例如，可以使用正则表达式从服务器日志中提取访问信息、分析用户行为模式等。</p>
+</li>
+<li><p><strong>编程语言中的模式匹配：</strong> 许多编程语言（如Python、JavaScript、Java等）都提供了对正则表达式的支持，可以在编程中使用正则表达式来实现模式匹配、字符串搜索和处理等功能。</p>
+</li>
+</ol>
+<p>总的来说，正则表达式是一种强大而灵活的文本处理工具，在各种文本处理、搜索和匹配场景中都有着重要的应用价值。通过合理使用正则表达式，可以提高文本处理的效率和精度，从而更好地满足实际需求。</p>
+<h2 id="掌握基本语法和元字符"><a href="#掌握基本语法和元字符" class="headerlink" title="掌握基本语法和元字符"></a>掌握基本语法和元字符</h2><h3 id="学习常见的元字符（如-、-、-、-等）的含义和用法"><a href="#学习常见的元字符（如-、-、-、-等）的含义和用法" class="headerlink" title="学习常见的元字符（如.、*、+、?等）的含义和用法"></a><strong>学习常见的元字符（如<code>.</code>、<code>*</code>、<code>+</code>、<code>?</code>等）的含义和用法</strong></h3><p>元字符是正则表达式中具有特殊含义的字符，它们用于描述模式的结构和特征。以下是一些常见的元字符及其含义和用法：</p>
+<ol>
+<li><p><code>.</code>（点号）：匹配任意单个字符，除了换行符 <code>\n</code> 外的任何字符。例如，正则表达式 <code>a.c</code> 可以匹配 “abc”、”a1c”、”a@c” 等。</p>
+</li>
+<li><p><code>*</code>（星号）：匹配前面的字符零次或多次。例如，正则表达式 <code>ab*</code> 可以匹配 “a”、”ab”、”abb”、”abbb” 等。</p>
+</li>
+<li><p><code>+</code>（加号）：匹配前面的字符一次或多次。例如，正则表达式 <code>ab+</code> 可以匹配 “ab”、”abb”、”abbb” 等，但不能匹配 “a”。</p>
+</li>
+<li><p><code>?</code>（问号）：匹配前面的字符零次或一次，表示可选。例如，正则表达式 <code>ab?</code> 可以匹配 “a”、”ab”，但不能匹配 “abb”。</p>
+</li>
+<li><p><code>^</code>（脱字符）：匹配输入字符串的开始位置。例如，正则表达式 <code>^abc</code> 可以匹配以 “abc” 开头的字符串。</p>
+</li>
+<li><p><code>$</code>（美元符号）：匹配输入字符串的结束位置。例如，正则表达式 <code>abc$</code> 可以匹配以 “abc” 结尾的字符串。</p>
+</li>
+<li><p><code>[]</code>（字符类）：匹配指定范围内的任意一个字符。例如，正则表达式 <code>[abc]</code> 可以匹配 “a”、”b”、”c” 中的任意一个字符。</p>
+</li>
+<li><p><code>[^]</code>（排除字符类）：匹配除了指定范围内的任意一个字符以外的字符。例如，正则表达式 <code>[^abc]</code> 可以匹配除了 “a”、”b”、”c” 以外的任意一个字符。</p>
+</li>
+<li><p><code>()</code>（分组）：将多个字符组合成一个单元，可以对其进行量词操作或引用。例如，正则表达式 <code>(ab)+</code> 可以匹配 “ab”、”abab”、”ababab” 等。</p>
+</li>
+<li><p><code>\</code>（反斜杠）：用于转义特殊字符，使其失去特殊含义。例如，正则表达式 <code>\.com</code> 可以匹配 “.com”，而不是匹配任意字符后跟着 “com”。</p>
+</li>
+</ol>
+<p>以上是一些常见的元字符及其含义和用法，掌握它们能够帮助你构建更加灵活和强大的正则表达式，用于实现各种文本匹配和处理任务。</p>
+<h2 id="了解字符类-和排除字符字类-的使用"><a href="#了解字符类-和排除字符字类-的使用" class="headerlink" title="了解字符类[]和排除字符字类[^]的使用"></a><strong>了解字符类<code>[]</code>和排除字符字类<code>[^]</code>的使用</strong></h2><p>字符类 <code>[]</code> 和排除字符类 <code>[^]</code> 是正则表达式中用于匹配指定范围内字符的特殊构造。</p>
+<ol>
+<li>字符类 <code>[]</code>：<ul>
+<li>字符类用于匹配方括号内的任意一个字符。</li>
+<li>可以指定单个字符，也可以指定字符范围。</li>
+<li>如果在字符类中使用连字符 <code>-</code>，它会表示一个字符范围。</li>
+<li>字符类中的元字符失去特殊含义，只匹配自身字符。</li>
+</ul>
+</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<ul>
+<li><code>[abc]</code>：匹配 “a”、”b”、”c” 中的任意一个字符。</li>
+<li><code>[a-z]</code>：匹配从 “a” 到 “z” 之间的任意一个小写字母。</li>
+</ul>
+<ol start="2">
+<li>排除字符类 <code>[^]</code>：<ul>
+<li>排除字符类用于匹配除了方括号内指定的字符之外的任意一个字符。</li>
+<li>在字符类的开头使用插入符 <code>^</code> 表示排除字符类。</li>
+<li>排除字符类中的元字符失去特殊含义，只匹配自身字符。</li>
+</ul>
+</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<ul>
+<li><code>[^abc]</code>：匹配除了 “a”、”b”、”c” 之外的任意一个字符。</li>
+<li><code>[^a-z]</code>：匹配除了小写字母之外的任意一个字符。</li>
+</ul>
+<p><strong>使用示例</strong>：</p>
+<ul>
+<li><code>[aeiou]</code>：匹配任意一个元音字母。</li>
+<li><code>[0-9]</code>：匹配任意一个数字字符。</li>
+<li><code>[^0-9]</code>：匹配除了数字字符之外的任意一个字符。</li>
+<li><code>[A-Za-z]</code>：匹配任意一个大小写字母。</li>
+</ul>
+<p>总之，字符类 <code>[]</code> 和排除字符类 <code>[^]</code> 是正则表达式中用于匹配指定范围内字符的重要工具，它们可以帮助你更精确地匹配目标字符，从而实现各种文本处理任务。</p>
+<h3 id="理解元字符的贪婪匹配和非贪婪匹配"><a href="#理解元字符的贪婪匹配和非贪婪匹配" class="headerlink" title="理解元字符的贪婪匹配和非贪婪匹配"></a><strong>理解元字符的贪婪匹配和非贪婪匹配</strong></h3><p>在正则表达式中，量词元字符（如 <code>*</code>、<code>+</code>、<code>?</code>、<code>{}</code>）通常具有贪婪匹配和非贪婪匹配两种匹配模式。</p>
+<ol>
+<li><strong>贪婪匹配</strong>：<ul>
+<li>贪婪匹配是默认的匹配模式。</li>
+<li>贪婪匹配尽可能多地匹配文本，直到无法继续匹配为止。</li>
+<li>在量词元字符后加上 <code>?</code> 可以将其转换为非贪婪匹配模式。</li>
+</ul>
+</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<ul>
+<li>对于正则表达式 <code>a+</code>，在文本 “aaaa” 中进行匹配时，贪婪匹配会尽可能匹配更多的 “a”，结果会匹配整个字符串 “aaaa”。</li>
+<li>对于正则表达式 <code>a+?</code>，在相同的文本 “aaaa” 中进行匹配时，非贪婪匹配只会匹配尽可能少的 “a”，结果会匹配一个 “a”。</li>
+</ul>
+<ol start="2">
+<li><strong>非贪婪匹配（懒惰匹配）</strong>：<ul>
+<li>非贪婪匹配尽可能少地匹配文本，以满足匹配条件为止。</li>
+<li>在量词元字符后加上 <code>?</code> 就可以将其转换为非贪婪匹配模式。</li>
+<li>非贪婪匹配也被称为懒惰匹配或最小匹配。</li>
+</ul>
+</li>
+</ol>
+<p><strong>示例</strong>：</p>
+<ul>
+<li>对于正则表达式 <code>a*</code>，在文本 “aaaa” 中进行匹配时，贪婪匹配会匹配整个字符串 “aaaa”，而非贪婪匹配会匹配空字符串，因为它尽可能少地匹配 “a”。</li>
+<li>对于正则表达式 <code>a*?</code>，在相同的文本 “aaaa” 中进行匹配时，非贪婪匹配会匹配尽可能少的 “a”，结果会匹配空字符串。</li>
+</ul>
+<p>总之，贪婪匹配和非贪婪匹配是正则表达式中量词元字符的两种匹配模式，可以根据实际需求选择合适的模式来匹配目标文本。</p>
+<h2 id="学习基本的匹配模式"><a href="#学习基本的匹配模式" class="headerlink" title="学习基本的匹配模式"></a>学习基本的匹配模式</h2><h3 id="使用-匹配任意字符"><a href="#使用-匹配任意字符" class="headerlink" title="使用.匹配任意字符"></a><strong>使用<code>.</code>匹配任意字符</strong></h3><p>使用<code>.</code>可以匹配任意单个字符，除了换行符 <code>\n</code> 之外的任何字符。下面是一些示例：</p>
+<ol>
+<li><p>正则表达式：<code>.</code> </p>
+<ul>
+<li>匹配：任意单个字符，除了换行符。</li>
+<li>示例：<code>a.</code> 可以匹配 “ab”、”ac”，但不能匹配 “a\n”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>a.b</code></p>
+<ul>
+<li>匹配：一个 “a” 后面跟着任意单个字符，然后再跟着一个 “b”。</li>
+<li>示例：<code>a.b</code> 可以匹配 “axb”、”a1b”，但不能匹配 “a\nb”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>.*</code></p>
+<ul>
+<li>匹配：任意数量（包括零个）的任意字符。</li>
+<li>示例：<code>.*</code> 可以匹配任何字符串，包括空字符串。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>a.*b</code></p>
+<ul>
+<li>匹配：以 “a” 开头，以 “b” 结尾，中间包含任意数量的任意字符的字符串。</li>
+<li>示例：<code>a.*b</code> 可以匹配 “axxxxxb”、”a1b”、”ab”，但不能匹配 “a\nb”。</li>
+</ul>
+</li>
+</ol>
+<p>总之，<code>.</code> 是一个匹配任意单个字符的元字符，除了换行符 <code>\n</code> 之外的任何字符。</p>
+<h3 id="使用字符类-匹配指定范围的字符"><a href="#使用字符类-匹配指定范围的字符" class="headerlink" title="使用字符类[]匹配指定范围的字符"></a><strong>使用字符类<code>[]</code>匹配指定范围的字符</strong></h3><p>字符类 <code>[]</code> 可以用来匹配指定范围内的任意一个字符。下面是一些示例：</p>
+<ol>
+<li><p>正则表达式：<code>[abc]</code></p>
+<ul>
+<li>匹配：任意一个字符，可以是 “a”、”b” 或 “c” 中的任意一个。</li>
+<li>示例：<code>[abc]</code> 可以匹配 “a”、”b”、”c”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>[a-z]</code></p>
+<ul>
+<li>匹配：任意一个小写字母。</li>
+<li>示例：<code>[a-z]</code> 可以匹配 “a”、”b”、”c”、…、”z”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>[A-Z]</code></p>
+<ul>
+<li>匹配：任意一个大写字母。</li>
+<li>示例：<code>[A-Z]</code> 可以匹配 “A”、”B”、”C”、…、”Z”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>[0-9]</code></p>
+<ul>
+<li>匹配：任意一个数字字符。</li>
+<li>示例：<code>[0-9]</code> 可以匹配 “0”、”1”、”2”、…、”9”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>[a-zA-Z]</code></p>
+<ul>
+<li>匹配：任意一个字母，可以是小写字母或大写字母。</li>
+<li>示例：<code>[a-zA-Z]</code> 可以匹配 “a”、”b”、…、”z” 和 “A”、”B”、…、”Z”。</li>
+</ul>
+</li>
+<li><p>正则表达式：<code>[0-9a-fA-F]</code></p>
+<ul>
+<li>匹配：任意一个十六进制字符，可以是数字 0-9 或小写字母 a-f 或大写字母 A-F。</li>
+<li>示例：<code>[0-9a-fA-F]</code> 可以匹配 “0”、”1”、…、”9”、”a”、”b”、…、”f”、”A”、”B”、…、”F”。</li>
+</ul>
+</li>
+</ol>
+<p>总之，字符类 <code>[]</code> 可以用于匹配指定范围内的任意一个字符，你可以根据需要灵活地使用它来匹配目标字符。</p>
+<h3 id="使用元字符-、-、-进行重复匹配"><a href="#使用元字符-、-、-进行重复匹配" class="headerlink" title="使用元字符*、+、?进行重复匹配"></a><strong>使用元字符<code>*</code>、<code>+</code>、<code>?</code>进行重复匹配</strong></h3><p>元字符 <code>*</code>、<code>+</code> 和 <code>?</code> 都是用于表示重复匹配的量词，它们可以指定前面的字符或子表达式的重复次数，具体如下：</p>
+<ol>
+<li><p><code>*</code>（星号）：匹配前面的字符或子表达式零次或多次。</p>
+<ul>
+<li>示例：<ul>
+<li>正则表达式 <code>ab*</code> 匹配一个 “a” 后面跟着零个或多个 “b”，因此可以匹配 “a”、”ab”、”abb”、”abbb” 等。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code>+</code>（加号）：匹配前面的字符或子表达式一次或多次。</p>
+<ul>
+<li>示例：<ul>
+<li>正则表达式 <code>ab+</code> 匹配一个 “a” 后面跟着至少一个 “b”，因此可以匹配 “ab”、”abb”、”abbb” 等，但不能匹配 “a”。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code>?</code>（问号）：匹配前面的字符或子表达式零次或一次，表示可选。</p>
+<ul>
+<li>示例：<ul>
+<li>正则表达式 <code>ab?</code> 匹配一个 “a” 后面跟着零个或一个 “b”，因此可以匹配 “a”、”ab”，但不能匹配 “abb”。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>这些量词元字符可以用于构建复杂的匹配规则，你可以根据实际需求选择合适的量词来匹配目标字符串。</p>
+<h3 id="使用锚点-和-匹配行的开头和结尾"><a href="#使用锚点-和-匹配行的开头和结尾" class="headerlink" title="使用锚点^和$匹配行的开头和结尾"></a><strong>使用锚点<code>^</code>和<code>$</code>匹配行的开头和结尾</strong></h3><p>锚点 <code>^</code> 和 <code>$</code> 分别用于匹配行的开头和结尾。</p>
+<ul>
+<li><code>^</code>（脱字符）：匹配输入字符串的开始位置。</li>
+<li><code>$</code>（美元符号）：匹配输入字符串的结束位置。</li>
+</ul>
+<p>这些锚点可以用于限制匹配的位置，确保匹配发生在输入字符串的特定位置。以下是一些示例：</p>
+<ol>
+<li><p>正则表达式 <code>^Hello</code>：</p>
+<ul>
+<li>匹配：以 “Hello” 开头的字符串。</li>
+<li>示例：<code>^Hello</code> 可以匹配 “Hello, world!” 中的 “Hello”，但不能匹配 “Hi, Hello” 中的 “Hello”。</li>
+</ul>
+</li>
+<li><p>正则表达式 <code>world!$</code>：</p>
+<ul>
+<li>匹配：以 “world!” 结尾的字符串。</li>
+<li>示例：<code>world!$</code> 可以匹配 “Hello, world!” 中的 “world!”，但不能匹配 “world! Hello” 中的 “world!”。</li>
+</ul>
+</li>
+<li><p>正则表达式 <code>^Hello, world!$</code>：</p>
+<ul>
+<li>匹配：完全匹配 “Hello, world!” 的字符串。</li>
+<li>示例：<code>^Hello, world!$</code> 只能匹配 “Hello, world!”，不匹配其他字符串。</li>
+</ul>
+</li>
+<li><p>正则表达式 <code>^$</code>：</p>
+<ul>
+<li>匹配：空字符串。</li>
+<li>示例：<code>^$</code> 只能匹配空字符串。</li>
+</ul>
+</li>
+</ol>
+<p>这些锚点非常有用，可以用于确保匹配发生在字符串的指定位置，从而实现更精确的匹配。</p>
+<h1 id="中级阶段"><a href="#中级阶段" class="headerlink" title="中级阶段"></a>中级阶段</h1><h2 id="深入理解分组和捕获"><a href="#深入理解分组和捕获" class="headerlink" title="深入理解分组和捕获"></a>深入理解分组和捕获</h2><h3 id="学习如何使用小括号-进行分组"><a href="#学习如何使用小括号-进行分组" class="headerlink" title="学习如何使用小括号()进行分组"></a><strong>学习如何使用小括号<code>()</code>进行分组</strong></h3><p>小括号 <code>()</code> 在正则表达式中用于创建一个子表达式，也称为分组。分组可以将多个字符或子表达式组合成一个单元，从而可以对这个单元进行量词操作、引用等。</p>
+<p>下面是使用小括号 <code>()</code> 进行分组的一些示例和说明：</p>
+<ol>
+<li><p><strong>分组示例</strong>：</p>
+<ul>
+<li>正则表达式 <code>(\d{3})-\d{3}-\d{4}</code> 匹配电话号码，并将区号部分 <code>\d{3}</code> 放在第一个分组中。</li>
+</ul>
+</li>
+<li><p><strong>量词操作</strong>：</p>
+<ul>
+<li>可以对整个分组进行量词操作，例如 <code>(\d{3}){2}</code> 表示匹配两次区号。</li>
+<li>正则表达式 <code>(ab)+</code> 匹配一个或多个连续的 “ab”。</li>
+</ul>
+</li>
+<li><p><strong>引用</strong>：</p>
+<ul>
+<li>可以通过反向引用来引用分组，例如 <code>\1</code> 表示引用第一个分组。</li>
+<li>正则表达式 <code>(\w+)\s\1</code> 可以用来匹配重复的单词，例如 “hello hello”。</li>
+</ul>
+</li>
+<li><p><strong>捕获组</strong>：</p>
+<ul>
+<li>分组还可以作为捕获组，匹配的内容可以在匹配后进行提取和使用。</li>
+<li>在一些编程语言中，捕获组的匹配结果可以通过索引或命名进行访问。</li>
+</ul>
+</li>
+</ol>
+<p>分组可以使正则表达式更加灵活和强大，你可以根据实际需求合理地使用分组来构建更复杂的匹配规则。</p>
+<h3 id="理解捕获组的概念和用法"><a href="#理解捕获组的概念和用法" class="headerlink" title="理解捕获组的概念和用法"></a><strong>理解捕获组的概念和用法</strong></h3><p>捕获组是正则表达式中的一种特性，它允许你将匹配到的子字符串单独提取出来，并在匹配后进行访问和使用。当你使用小括号 <code>()</code> 将一个部分包围起来时，这个部分就成为了一个捕获组。捕获组在很多编程语言和正则表达式引擎中都有广泛的支持。</p>
+<ul>
+<li><strong>捕获组的用法</strong>：</li>
+</ul>
+<ol>
+<li><p><strong>提取匹配的内容：</strong> 捕获组允许你在匹配后从原始字符串中提取出你感兴趣的部分。这对于从文本中提取特定信息非常有用，比如从电话号码中提取区号。</p>
+</li>
+<li><p><strong>引用捕获组：</strong> 在正则表达式中，你可以使用反向引用来引用捕获组。这意味着你可以在同一正则表达式中引用之前匹配到的内容，从而实现更复杂的匹配规则。例如，你可以匹配重复的单词或重复的数字。</p>
+</li>
+<li><p><strong>在匹配后使用捕获组：</strong> 一旦正则表达式匹配成功，你可以使用编程语言的正则表达式相关函数来访问捕获组中的内容，并在程序中进一步处理或使用这些内容。不同的编程语言提供了不同的方式来访问捕获组中的内容，通常是通过索引或命名来访问。</p>
+</li>
+</ol>
+<ul>
+<li><strong>示例</strong>：</li>
+</ul>
+<p>假设我们有一个字符串 “My email address is <a href="mailto:example@example.com">example@example.com</a>“，我们想要提取出其中的邮箱地址。</p>
+<p>使用正则表达式 <code>/(\w+@\w+\.\w+)/</code>，其中 <code>(\w+@\w+\.\w+)</code> 是一个捕获组，可以匹配一个邮箱地址，并提取出来。</p>
+<p>在编程中，你可以使用正则表达式引擎提供的相关函数，比如在 Python 中使用 <code>re.match()</code> 或 <code>re.search()</code>，来匹配字符串，并访问捕获组中的内容。</p>
+<p>总之，捕获组是正则表达式中一种非常有用的特性，可以帮助你从文本中提取出你感兴趣的内容，并在程序中进一步处理和使用。</p>
+<h3 id="学习如何引用捕获组"><a href="#学习如何引用捕获组" class="headerlink" title="学习如何引用捕获组"></a><strong>学习如何引用捕获组</strong></h3><p>在正则表达式中，引用捕获组是指在同一个正则表达式中使用已经匹配到的捕获组的内容。这种引用通常使用反向引用来实现。下面是一些关于如何引用捕获组的基本知识和示例：</p>
+<ol>
+<li>使用反向引用来引用捕获组：</li>
+</ol>
+<p>在正则表达式中，可以使用 <code>\数字</code> 来引用之前定义的捕获组，其中数字表示捕获组的索引，从 1 开始计数。</p>
+<p>例如，假设我们有一个正则表达式 <code>(\w+)\s\1</code>，其中 <code>(\w+)</code> 是第一个捕获组，匹配一个或多个单词字符，<code>\s</code> 匹配一个空白字符，<code>\1</code> 表示引用第一个捕获组。这个正则表达式将匹配重复的单词。</p>
+<p><strong>示例</strong>：</p>
+<p>考虑字符串 “hello hello”，我们想要匹配其中重复的单词。</p>
+<ul>
+<li>正则表达式：<code>(\w+)\s\1</code><ul>
+<li><code>(\w+)</code>：第一个捕获组，匹配一个或多个单词字符。</li>
+<li><code>\s</code>：匹配一个空白字符。</li>
+<li><code>\1</code>：引用第一个捕获组。</li>
+</ul>
+</li>
+<li>匹配结果：匹配到 “hello hello”，因为第一个 “hello” 被捕获到了，然后 <code>\1</code> 引用了第一个捕获组，所以它要求匹配到的内容必须与第一个捕获组相同，于是第二个 “hello” 也被匹配到了。</li>
+</ul>
+<ol start="2">
+<li><strong>在代码中引用捕获组</strong>：</li>
+</ol>
+<p>在使用正则表达式进行匹配的编程语言中，通常提供了相应的函数来访问捕获组的内容。你可以使用这些函数来获取捕获组中的内容，并在程序中进一步处理。</p>
+<p>以 Python 为例，可以使用 <code>re</code> 模块中的 <code>match()</code> 或 <code>search()</code> 函数来进行正则表达式匹配，并使用 <code>group()</code> 方法来访问捕获组中的内容。</p>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">text = <span class="string">"hello hello"</span></span><br><span class="line">pattern = <span class="string">r"(\w+)\s\1"</span></span><br><span class="line"><span class="keyword">match</span> = re.search(pattern, text)</span><br><span class="line"><span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Match found:"</span>, <span class="keyword">match</span>.group(<span class="number">0</span>))  <span class="comment"># 打印整个匹配到的内容</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">"Captured group:"</span>, <span class="keyword">match</span>.group(<span class="number">1</span>))  <span class="comment"># 打印第一个捕获组的内容</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>总之，引用捕获组是一种在正则表达式中使用已经匹配到的内容的强大技术，可以帮助你构建更复杂和灵活的匹配规则。</p>
+<h2 id="掌握常用的预定义字符类"><a href="#掌握常用的预定义字符类" class="headerlink" title="掌握常用的预定义字符类"></a>掌握常用的预定义字符类</h2><h3 id="学习如何使用-d、-w、-s等预定义字符类匹配数字、字母、空白字符等"><a href="#学习如何使用-d、-w、-s等预定义字符类匹配数字、字母、空白字符等" class="headerlink" title="学习如何使用\d、\w、\s等预定义字符类匹配数字、字母、空白字符等"></a><strong>学习如何使用<code>\d</code>、<code>\w</code>、<code>\s</code>等预定义字符类匹配数字、字母、空白字符等</strong></h3><p>在正则表达式中，<code>\d</code>、<code>\w</code>、<code>\s</code> 等是预定义字符类，用于匹配特定类型的字符。它们的含义如下：</p>
+<ul>
+<li><code>\d</code>：匹配任意一个数字字符，相当于字符类 <code>[0-9]</code>。</li>
+<li><code>\w</code>：匹配任意一个字母、数字或下划线字符（即单词字符），相当于字符类 <code>[A-Za-z0-9_]</code>。</li>
+<li><code>\s</code>：匹配任意一个空白字符，包括空格、制表符、换行符等。</li>
+</ul>
+<p>以下是一些示例，演示如何使用这些预定义字符类：</p>
+<ol>
+<li><p>匹配一个数字字符：</p>
+<ul>
+<li>正则表达式：<code>\d</code></li>
+<li>匹配：任意一个数字字符，包括 “0” 到 “9” 之间的任意一个数字。</li>
+</ul>
+</li>
+<li><p>匹配一个字母、数字或下划线字符：</p>
+<ul>
+<li>正则表达式：<code>\w</code></li>
+<li>匹配：任意一个字母、数字或下划线字符，包括大写字母、小写字母、数字和下划线。</li>
+</ul>
+</li>
+<li><p>匹配一个空白字符：</p>
+<ul>
+<li>正则表达式：<code>\s</code></li>
+<li>匹配：任意一个空白字符，包括空格、制表符、换行符等。</li>
+</ul>
+</li>
+</ol>
+<p>示例代码（使用 Python 的 re 模块）：</p>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">text = <span class="string">"The number is 123, and the word is hello world."</span></span><br><span class="line">pattern_digit = <span class="string">r"\d"</span></span><br><span class="line">pattern_word = <span class="string">r"\w"</span></span><br><span class="line">pattern_space = <span class="string">r"\s"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配数字字符</span></span><br><span class="line">matches_digit = re.findall(pattern_digit, text)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Digits:"</span>, matches_digit)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配字母、数字或下划线字符</span></span><br><span class="line">matches_word = re.findall(pattern_word, text)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Words:"</span>, matches_word)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 匹配空白字符</span></span><br><span class="line">matches_space = re.findall(pattern_space, text)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">"Spaces:"</span>, matches_space)</span><br></pre></td></tr></tbody></table></figure>
+
+<p>输出结果会分别显示匹配到的数字字符、字母、数字或下划线字符以及空白字符。</p>
+<h2 id="了解量词的贪婪与非贪婪"><a href="#了解量词的贪婪与非贪婪" class="headerlink" title="了解量词的贪婪与非贪婪"></a>了解量词的贪婪与非贪婪</h2><h3 id="深入理解量词-、-、-的贪婪匹配和非贪婪匹配"><a href="#深入理解量词-、-、-的贪婪匹配和非贪婪匹配" class="headerlink" title="深入理解量词*、+、?的贪婪匹配和非贪婪匹配"></a><strong>深入理解量词<code>*</code>、<code>+</code>、<code>?</code>的贪婪匹配和非贪婪匹配</strong></h3><p>理解量词 <code>*</code>、<code>+</code> 和 <code>?</code> 的贪婪匹配和非贪婪匹配是使用正则表达式时非常重要的概念。</p>
+<ol>
+<li><p><strong>贪婪匹配</strong>：</p>
+<ul>
+<li>默认情况下，<code>*</code>、<code>+</code> 和 <code>?</code> 都是贪婪的，它们会尽可能多地匹配目标文本，直到不能匹配为止。</li>
+<li>在贪婪模式下，正则表达式引擎会尝试匹配尽可能长的字符串。</li>
+<li>贪婪匹配的量词会尽可能多地匹配符合条件的文本，而且不会考虑后续可能的匹配情况。</li>
+</ul>
+</li>
+<li><p><strong>非贪婪匹配（懒惰匹配）</strong>：</p>
+<ul>
+<li>在量词后面添加 <code>?</code> 可以将贪婪匹配转换为非贪婪匹配。</li>
+<li>非贪婪匹配会尽可能少地匹配目标文本，直到满足匹配条件为止。</li>
+<li>非贪婪匹配会尽可能少地匹配符合条件的文本，以便为后续的匹配留下更多的机会。</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><strong>示例</strong>：</li>
+</ul>
+<p>考虑正则表达式 <code>.*</code>，它表示匹配任意数量（包括零个）的任意字符。</p>
+<ul>
+<li>在贪婪模式下，正则表达式引擎会尽可能多地匹配文本，因此会匹配尽可能长的字符串。</li>
+<li>在非贪婪模式下，添加 <code>?</code> 后，正则表达式引擎会尽可能少地匹配文本，因此会匹配尽可能短的字符串。</li>
+</ul>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">目标文本：abcdefg</span><br><span class="line">正则表达式：.*</span><br><span class="line"></span><br><span class="line">贪婪匹配结果：abcdefg</span><br><span class="line">非贪婪匹配结果：a</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在贪婪模式下，<code>.*</code> 匹配了整个目标文本 “abcdefg”，而在非贪婪模式下，<code>.*?</code> 只匹配了目标文本的第一个字符 “a”。</p>
+<p>总之，理解量词 <code>*</code>、<code>+</code> 和 <code>?</code> 的贪婪匹配和非贪婪匹配可以帮助你编写更加精确和有效的正则表达式，从而实现各种文本匹配和处理任务。</p>
+<h2 id="学习反向引用"><a href="#学习反向引用" class="headerlink" title="学习反向引用"></a>学习反向引用</h2><h3 id="掌握如何使用-1、-2等反向引用捕获组"><a href="#掌握如何使用-1、-2等反向引用捕获组" class="headerlink" title="掌握如何使用\1、\2等反向引用捕获组"></a><strong>掌握如何使用<code>\1</code>、<code>\2</code>等反向引用捕获组</strong></h3><p>反向引用捕获组是指在正则表达式中引用已经匹配到的捕获组的内容。在大多数编程语言和正则表达式引擎中，你可以使用 <code>\数字</code> 来引用捕获组，其中数字表示捕获组的索引，从 1 开始计数。</p>
+<p>以下是一些关于如何使用反向引用捕获组的基本知识和示例：</p>
+<ul>
+<li><strong>使用反向引用</strong>：</li>
+</ul>
+<ol>
+<li><p>在正则表达式中，使用 <code>\数字</code> 来引用之前定义的捕获组。</p>
+</li>
+<li><p>数字表示捕获组的索引，从 1 开始计数，即第一个捕获组的索引是 1，第二个捕获组的索引是 2，依此类推。</p>
+</li>
+<li><p>在正则表达式中，可以在需要引用捕获组的地方使用 <code>\数字</code>，例如替换字符串中、在匹配模式中等。</p>
+</li>
+</ol>
+<ul>
+<li><strong>示例</strong>：</li>
+</ul>
+<p>假设我们有一个字符串 “hello hello”，我们想要匹配其中重复的单词，并将重复的单词替换为单个单词。</p>
+<ol>
+<li>正则表达式：<code>(\w+)\s\1</code><ul>
+<li><code>(\w+)</code>：第一个捕获组，匹配一个或多个单词字符。</li>
+<li><code>\s</code>：匹配一个空白字符。</li>
+<li><code>\1</code>：引用第一个捕获组。</li>
+</ul>
+</li>
+<li>替换字符串：<code>\1</code><ul>
+<li>将匹配到的重复单词替换为第一个捕获组的内容。</li>
+</ul>
+</li>
+</ol>
+<p>在代码中，我们可以使用编程语言提供的正则表达式替换函数，如 Python 中的 <code>re.sub()</code>，来实现这个功能。</p>
+<ul>
+<li><strong>示例代码（Python）</strong>：</li>
+</ul>
+<figure class="highlight python"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line">text = <span class="string">"hello hello"</span></span><br><span class="line">pattern = <span class="string">r"(\w+)\s\1"</span></span><br><span class="line">replacement = <span class="string">r"\1"</span></span><br><span class="line"></span><br><span class="line">result = re.sub(pattern, replacement, text)</span><br><span class="line"><span class="built_in">print</span>(result)  <span class="comment"># 输出 "hello"</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个示例中，正则表达式 <code>(\w+)\s\1</code> 匹配了重复的单词，并使用 <code>\1</code> 将重复的单词替换为第一个捕获组的内容，最终输出结果为 “hello”。</p>
+<p><strong>高级阶段</strong>和<strong>进阶阶段</strong>用不到</p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/AI%E7%94%9F%E6%88%90/">AI生成</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2024/03/10/ffmpeg-%E7%9A%84%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          ffmpeg-的常用命令
+        </a>
+      
+    </div>
+    <div>
+      
+        <a href="/2024/02/28/%E5%9F%9F%E5%90%8D%E7%9A%84%E4%B8%80%E7%82%B9%E7%82%B9%E7%9F%A5%E8%AF%86/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          域名解析与子域名应用指南
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+  <!-- FILEPATH: /D:/workspace/myblog/themes/maple/layout/_partial/footer.ejs -->
+  <!-- BEGIN: ed8c6549bwf9 -->
+  <!-- share button -->
+  <div class="flex items-center gap-2">
+    <span>Share:</span>
+    <a href="https://www.facebook.com/sharer.php?u=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+    <a href="https://twitter.com/intent/tweet?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+    <a href="https://www.linkedin.com/shareArticle?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="https://t.me/share/url?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+  </div>
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <span>© 2024</span>
+    <a href="mailto:mylinkmail@foxmail.com" rel="noopener noreferrer">📫</a>
+  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Buttons</title>
+    
+    <!-- 引入 Font Awesome 图标样式 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <style>
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- 脚本 -->
+    <script>
+      var currentUrl = window.location.href;
+      document.querySelector('a[href="https://www.facebook.com/sharer.php?u=http://example.com"]').href = 'https://www.facebook.com/sharer.php?u=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://twitter.com/intent/tweet?url=http://example.com"]').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://www.linkedin.com/shareArticle?url=http://example.com"]').href = 'https://www.linkedin.com/shareArticle?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://t.me/share/url?url=http://example.com"]').href = 'https://t.me/share/url?url=' + encodeURIComponent(currentUrl);
+    </script>
+  </body>
+  </html>
+  <!-- END: ed8c6549bwf9 -->
+</html>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "0";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>

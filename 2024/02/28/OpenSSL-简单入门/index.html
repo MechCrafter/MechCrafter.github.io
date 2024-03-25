@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="MechCrafter">
+
+
+  <meta name="subtitle" content="随笔✒️、记录🗓️、学习📚">
+
+
+
+
+<title>OpenSSL 简单入门 | JM&#39;s log 👋</title>
+
+
+
+<link rel="icon" href="/favicon.ico">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="JM's log 👋" />
+          JM&#39;s log 👋
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        OpenSSL 简单入门
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+          <a class="hidden sm:flex" href="/category">Categories</a>
+        
+          <a class="hidden sm:flex" href="/tag">Tags</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/MechCrafter">
+                      <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+                    </a>
+                  
+                
+                <!-- <a class="w-5 h-5 hidden sm:flex" title="Github" href="rss2.xml">
+                  <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+                </a> -->
+                <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+                  <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+                </a>
+              </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/category" class="flex h-12 sm:h-auto items-center">Categories</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/tag" class="flex h-12 sm:h-auto items-center">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        OpenSSL 简单入门
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-03-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>22 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>6k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <h1 id="OpenSSL"><a href="#OpenSSL" class="headerlink" title="OpenSSL"></a>OpenSSL</h1><p>OpenSSL是一个强大的安全套接字层密码库，包含了许多用于网络数据传输、密码学和证书生成的工具。它实现了SSL和TLS协议，这两种协议广泛用于保护网络数据传输的安全。</p>
+<p>OpenSSL库提供了丰富的API，可以用于加密、解密、生成数字签名、验证数字签名等操作。它支持多种密码算法，包括RSA、AES、DES等。</p>
+<p>除了库之外，OpenSSL还提供了一个命令行工具，可以用于生成证书、转换证书格式、建立SSL/TLS客户端和服务器等操作。</p>
+<p>总的来说，OpenSSL是一个非常重要的工具，对于保护网络数据传输的安全起着关键的作用。</p>
+<p><strong>问：给我一个 OpenSSL 加密文件的通用命令</strong></p>
+<p><strong>答</strong>：以下是一个使用 OpenSSL 加密文件的通用命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -salt -pbkdf2 -iter 10000 -<span class="keyword">in</span> plaintext.txt -out ciphertext.enc -pass pass:yourpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>openssl enc -aes-256-cbc</code> 表示使用 AES-256-CBC 算法进行加密。</li>
+<li><code>-salt</code> 选项表示在密钥派生函数中使用盐值。</li>
+<li><code>-pbkdf2 -iter 10000</code> 表示使用 PBKDF2 密钥派生函数，并设置迭代次数为 10000。</li>
+<li><code>-in plaintext.txt</code> 表示要加密的输入文件是 <code>plaintext.txt</code>。</li>
+<li><code>-out ciphertext.enc</code> 表示加密后的输出文件是 <code>ciphertext.enc</code>。</li>
+<li><code>-pass pass:yourpassword</code> 表示用于加密的密码是 <code>yourpassword</code>。</li>
+</ul>
+<p>请将 <code>plaintext.txt</code>、<code>ciphertext.enc</code> 和 <code>yourpassword</code> 替换为你实际的文件名和密码。</p>
+<p><strong>问：OpenSSL 加密当前目录下的一个文件</strong></p>
+<p><strong>答</strong>：使用 OpenSSL 加密当前目录下的文件，你可以使用以下的命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -salt -<span class="keyword">in</span> filename -out filename.enc -pass pass:yourpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请将 <code>filename</code> 替换为你想要加密的文件的名称，将 <code>filename.enc</code> 替换为你想要输出的加密文件的名称，将 <code>yourpassword</code> 替换为你想要用于加密的密码。</p>
+<p>这个命令的意思是使用 AES-256-CBC 算法和你提供的密码，对指定的文件进行加密，并将加密后的内容输出到另一个文件。</p>
+<p>请注意，这个命令会使用你提供的密码直接作为加密密钥，这可能不是最安全的做法。在实际使用中，你可能需要使用更复杂的方法来生成和管理加密密钥。</p>
+<p><strong>问：OpenSSL 解密当前文件下的文件</strong></p>
+<p><strong>答</strong>：使用 OpenSSL 解密当前目录下的文件，你可以使用以下的命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -d -<span class="keyword">in</span> filename.enc -out filename -pass pass:yourpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请将 <code>filename.enc</code> 替换为你想要解密的文件的名称，将 <code>filename</code> 替换为你想要输出的解密文件的名称，将 <code>yourpassword</code> 替换为你用于加密的密码。</p>
+<p>这个命令的意思是使用 AES-256-CBC 算法和你提供的密码，对指定的文件进行解密，并将解密后的内容输出到另一个文件。</p>
+<p>请注意，这个命令假设你在加密文件时使用了相同的密码和算法。如果你在加密文件时使用了 <code>-pbkdf2</code> 和 <code>-iter</code> 选项，你也需要在解密文件时使用相同的选项。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -d -pbkdf2 -iter 10000 -<span class="keyword">in</span> filename.enc -out filename -pass pass:yourpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>问：什么是密钥派生</strong></p>
+<p><strong>答</strong>：密钥派生（Key Derivation）是一种从一个或多个秘密值（如密码或主密钥）生成一个或多个密钥的过程。这个过程通常会使用一个伪随机函数，以确保生成的密钥具有良好的随机性。</p>
+<p>密钥派生函数（Key Derivation Functions，KDFs）通常用于以下几种情况：</p>
+<ol>
+<li><p>从用户输入的密码生成密钥。因为用户输入的密码通常随机性不足，直接使用密码作为密钥可能会降低系统的安全性。通过 KDF，可以从密码生成一个随机性更好的密钥。</p>
+</li>
+<li><p>生成多个密钥。在某些情况下，一个系统可能需要多个密钥。通过 KDF，可以从一个主密钥生成多个子密钥。</p>
+</li>
+<li><p>密钥更新。通过 KDF，可以从旧的密钥生成新的密钥，这样可以定期更新密钥，提高系统的安全性。</p>
+</li>
+</ol>
+<p>在你看到的 OpenSSL 的命令中，<code>-pbkdf2</code> 选项启用了 PBKDF2（Password-Based Key Derivation Function 2）密钥派生函数，<code>-iter</code> 选项设置了 PBKDF2 函数的迭代次数。这样可以使得从密码派生出密钥的过程更加安全。</p>
+<p><strong>问：OpenSSL 检测哈希值</strong></p>
+<p><strong>答</strong>：在 OpenSSL 中，你可以使用 <code>dgst</code> 命令来计算文件的哈希值。以下是具体的步骤：</p>
+<ol>
+<li>首先，你需要打开终端。</li>
+<li>然后，导航到包含你想要检测的文件的目录。</li>
+<li>使用 <code>openssl dgst</code> 命令加上你想要使用的哈希算法和文件名。</li>
+</ol>
+<p>例如，如果你想要计算一个文件的 SHA-256 哈希值，你可以使用以下的命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl dgst -sha256 filename</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请将 <code>filename</code> 替换为你想要检测的文件的名称。</p>
+<p>这个命令会计算文件的 SHA-256 哈希值，并将结果打印到终端。</p>
+<p><strong>问：解释 <code>openssl enc -aes-256-cbc -d -pbkdf2 -iter 10000 -in filename.enc -out filename -pass pass:yourpassword</code> 命令</strong></p>
+<p><strong>答</strong>：这是一个使用 OpenSSL 的命令行命令，用于<strong>解密</strong>文件。下面是对这个命令的详细解释：</p>
+<ul>
+<li><p><code>openssl</code>: 这是 OpenSSL 的命令行工具，用于处理各种加密操作。</p>
+</li>
+<li><p><code>enc</code>: 这是 OpenSSL 的一个子命令，用于处理各种编码和解码操作。</p>
+</li>
+<li><p><code>-aes-256-cbc</code>: 这是加密算法的名称，这里使用的是 AES 256 位的 CBC 模式。</p>
+</li>
+<li><p><code>-d</code>: 这个选项表示我们要进行解密操作。</p>
+</li>
+<li><p><code>-pbkdf2</code>: 这是一个密码基础的密钥派生函数，用于从密码生成密钥。</p>
+</li>
+<li><p><code>-iter 10000</code>: 这个选项设置了 PBKDF2 函数的迭代次数。</p>
+</li>
+<li><p><code>-in filename.enc</code>: 这个选项指定了要解密的输入文件。</p>
+</li>
+<li><p><code>-out filename</code>: 这个选项指定了解密后的输出文件。</p>
+</li>
+<li><p><code>-pass pass:yourpassword</code>: 这个选项设置了用于生成密钥的密码。</p>
+</li>
+</ul>
+<p>总的来说，这个命令使用了 AES 256 位的 CBC 模式和 PBKDF2 函数，以及一个密码，对一个文件进行了解密，并将解密后的结果输出到了另一个文件。</p>
+<p><code>openssl enc -aes-256-cbc -pbkdf2 -iter 10000 -in filename -out filename.enc -pass pass:yourpassword</code> 与之对应的加密命令</p>
+<p><strong>问：OpenSSL 加密后的文件必须要是 <code>.enc</code> 格式吗</strong></p>
+<p><strong>答</strong>：不是的，OpenSSL 加密后的文件并不需要是 <code>.enc</code> 格式。<code>.enc</code> 只是一个常用的扩展名，用来表示文件是加密过的。实际上，你可以使用任何你喜欢的扩展名，或者甚至不使用扩展名。</p>
+<p>例如，以下的命令将一个文件加密并保存为 <code>.txt</code> 文件：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -salt -pbkdf2 -iter 10000 -<span class="keyword">in</span> plaintext.txt -out ciphertext.txt -pass pass:yourpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中，<code>plaintext.txt</code> 是要加密的文件，<code>ciphertext.txt</code> 是加密后的文件。尽管加密后的文件使用了 <code>.txt</code> 扩展名，但这并不影响你使用 OpenSSL 对其进行解密。</p>
+<p><strong>问：OpenSSL 支持哪些算法，全部列出来</strong> </p>
+<p><strong>答</strong>：OpenSSL 支持多种加密算法，包括对称加密算法、非对称加密算法和哈希函数。你可以使用以下的命令来列出 OpenSSL 支持的所有算法：</p>
+<ol>
+<li><p><strong>列出所有的对称加密算法：</strong></p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl list -cipher-algorithms</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>列出所有的非对称加密算法：</strong></p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl list -public-key-algorithms</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>列出所有的哈希函数：</strong></p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl list -digest-commands</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>这些命令会列出 OpenSSL 支持的所有对应类型的算法。请注意，可用的算法可能会根据你的 OpenSSL 版本和配置有所不同。</p>
+<p><strong>问：<code>./</code> 是什么意思</strong></p>
+<p><strong>答</strong>：在 Unix 和类 Unix 系统（包括 Linux 和 macOS）中，<code>./</code> 是一个特殊的目录路径，表示当前目录。</p>
+<p>例如，如果你在命令行中输入 <code>./sometext.txt</code>，这表示你想要访问当前目录下名为 <code>sometext.txt</code> 的文件。</p>
+<p>同样，如果你在命令行中输入 <code>./somedirectory/</code>，这表示你想要访问当前目录下名为 <code>somedirectory</code> 的子目录。</p>
+<p>这个符号在很多命令行操作中都很常见，例如在运行可执行文件或者指定文件路径时。</p>
+<hr>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># file content encryption (ignoring file path encryption)</span><br><span class="line"></span><br><span class="line">openssl enc -p -aes-256-cbc -pbkdf2 -iter 20000 -pass pass:somepassword -in ./sometext.txt -out ./sometext.txt.enc</span><br></pre></td></tr></tbody></table></figure>
+
+<p>解释上述命令</p>
+<p><strong>答</strong>：这是一个使用 OpenSSL 的命令行命令，用于加密文件内容。下面是对这个命令的详细解释：</p>
+<ul>
+<li><p><code>openssl</code>: 这是 OpenSSL 的命令行工具，用于处理各种加密操作。</p>
+</li>
+<li><p><code>enc</code>: 这是 OpenSSL 的一个子命令，用于处理各种编码和解码操作。</p>
+</li>
+<li><p><code>-p</code>: 这个选项会打印出加密过程中使用的盐值（salt）和密钥。</p>
+</li>
+<li><p><code>-aes-256-cbc</code>: 这是加密算法的名称，这里使用的是 AES 256 位的 CBC 模式。</p>
+</li>
+<li><p><code>-pbkdf2</code>: 这是一个密码基础的密钥派生函数，用于从密码生成密钥。</p>
+</li>
+<li><p><code>-iter 20000</code>: 这个选项设置了 PBKDF2 函数的迭代次数。</p>
+</li>
+<li><p><code>-pass pass:somepassword</code>: 这个选项设置了用于生成密钥的密码。</p>
+</li>
+<li><p><code>-in ./sometext.txt</code>: 这个选项指定了要加密的输入文件。</p>
+</li>
+<li><p><code>-out ./sometext.txt.enc</code>: 这个选项指定了加密后的输出文件。</p>
+</li>
+</ul>
+<p>总的来说，这个命令使用了 AES-256-CBC 算法和 PBKDF2 密钥派生函数，以及一个密码，对一个文件进行了加密，并将加密后的结果输出到另一个文件。同时，它还会打印出加密过程中使用的盐值和密钥。</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># file content decryption (ignoring file path decryption)</span><br><span class="line"></span><br><span class="line">openssl enc -d -p -aes-256-cbc -pbkdf2 -iter 20000 -pass pass:somepassword -in ./sometext.txt.enc -out ./sometext.txt</span><br></pre></td></tr></tbody></table></figure>
+
+<p>解释上述命令</p>
+<p><strong>答</strong>：这是一个使用 OpenSSL 的命令行命令，用于解密文件内容。下面是对这个命令的详细解释：</p>
+<ul>
+<li><p><code>openssl</code>: 这是 OpenSSL 的命令行工具，用于处理各种加密操作。</p>
+</li>
+<li><p><code>enc</code>: 这是 OpenSSL 的一个子命令，用于处理各种编码和解码操作。</p>
+</li>
+<li><p><code>-d</code>: 这个选项表示我们要进行解密操作。</p>
+</li>
+<li><p><code>-p</code>: 这个选项会打印出解密过程中使用的盐值（salt）和密钥。</p>
+</li>
+<li><p><code>-aes-256-cbc</code>: 这是加密算法的名称，这里使用的是 AES 256 位的 CBC 模式。</p>
+</li>
+<li><p><code>-pbkdf2</code>: 这是一个密码基础的密钥派生函数，用于从密码生成密钥。</p>
+</li>
+<li><p><code>-iter 20000</code>: 这个选项设置了 PBKDF2 函数的迭代次数。</p>
+</li>
+<li><p><code>-pass pass:somepassword</code>: 这个选项设置了用于生成密钥的密码。</p>
+</li>
+<li><p><code>-in ./sometext.txt.enc</code>: 这个选项指定了要解密的输入文件。</p>
+</li>
+<li><p><code>-out ./sometext.txt</code>: 这个选项指定了解密后的输出文件。</p>
+</li>
+</ul>
+<p>总的来说，这个命令使用了 AES-256-CBC 算法和 PBKDF2 密钥派生函数，以及一个密码，对一个加密的文件进行解密，并将解密后的结果输出到另一个文件。同时，它还会打印出解密过程中使用的盐值和密钥。</p>
+<hr>
+<p><strong>问：OpenSSL 生成 RSA 密钥</strong></p>
+<p><strong>答</strong>：在 OpenSSL 中，你可以使用以下的命令来生成 RSA 密钥对：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openssl genpkey -algorithm RSA -out private_key.pem</span><br><span class="line">openssl rsa -pubout -<span class="keyword">in</span> private_key.pem -out public_key.pem</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这两个命令的意思是：</p>
+<ul>
+<li><p><code>openssl genpkey -algorithm RSA -out private_key.pem</code>：这个命令会生成一个 RSA 私钥，并将其保存到 <code>private_key.pem</code> 文件中。</p>
+</li>
+<li><p><code>openssl rsa -pubout -in private_key.pem -out public_key.pem</code>：这个命令会从 <code>private_key.pem</code> 文件中提取公钥，并将其保存到 <code>public_key.pem</code> 文件中。</p>
+</li>
+</ul>
+<p>完成以上步骤后，你就会得到一个 RSA 密钥对，私钥保存在 <code>private_key.pem</code> 文件中，公钥保存在 <code>public_key.pem</code> 文件中。</p>
+<p><strong>问：OpenSSL 批量加密命令</strong></p>
+<p><strong>答</strong>：OpenSSL 本身并不直接支持批量加密文件，但你可以结合使用 shell 脚本来实现这个功能。以下是一个简单的 bash 脚本，它会对一个目录中的所有文件进行加密：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> file <span class="keyword">in</span> /path/to/your/directory/*; <span class="keyword">do</span></span><br><span class="line">    openssl enc -aes-256-cbc -salt -pbkdf2 -iter 10000 -<span class="keyword">in</span> <span class="string">"<span class="variable">$file</span>"</span> -out <span class="string">"<span class="variable">$file</span>.enc"</span> -pass pass:yourpassword</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个脚本的工作原理是，它会遍历 <code>/path/to/your/directory/</code> 目录中的所有文件，对每个文件使用 OpenSSL 进行加密，并将加密后的文件保存为原文件名加上 <code>.enc</code> 的新文件。</p>
+<p>请将 <code>/path/to/your/directory/</code> 替换为你想要加密的文件所在的目录，将 <code>yourpassword</code> 替换为你想要用于加密的密码。</p>
+<p>请注意，这个脚本会对目录中的所有文件进行加密，包括子目录。如果你只想加密特定的文件，你需要修改 <code>for</code> 循环的条件。</p>
+<p><strong>问：这个脚本怎么运行</strong></p>
+<p><strong>答</strong>：这个脚本是一个 bash 脚本，你可以在 Unix-like 系统（如 Linux 或 macOS）的终端中运行它。以下是运行这个脚本的步骤：</p>
+<ol>
+<li><p>首先，将这个脚本保存到一个文件中，例如 <code>encrypt_files.sh</code>。</p>
+</li>
+<li><p>然后，给这个文件添加可执行权限。你可以使用 <code>chmod</code> 命令来完成这个步骤：</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> +x encrypt_files.sh</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>最后，你可以运行这个脚本：</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./encrypt_files.sh</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，你需要将 <code>/path/to/your/directory/</code> 和 <code>yourpassword</code> 替换为你实际的目录路径和密码。</p>
+<p>如果你在 Windows 系统中，你需要使用类似 Git Bash 或 WSL 这样的工具来运行这个脚本，因为 Windows 的命令提示符或 PowerShell 不支持 bash 脚本。</p>
+<p><strong>问：我用 <code>openssl list -cipher-algorithms</code> 命令之后，出现的信息之后分为 <code>legacy</code> 和 <code>provided</code>，这是什么意思</strong></p>
+<p><strong>答</strong>：在OpenSSL中，<code>legacy</code>和<code>provided</code>是指加密算法的来源或者说是它们的实现方式。</p>
+<ul>
+<li><p><strong>Legacy</strong>：这些是旧的、传统的加密算法，它们是直接编译到OpenSSL库中的。这些算法通常在早期的OpenSSL版本中就存在，但在新的版本中可能已经被淘汰或不推荐使用。</p>
+</li>
+<li><p><strong>Provided</strong>：这些是由OpenSSL的提供者框架（providers framework）提供的加密算法。提供者框架是OpenSSL 3.0中引入的一个新特性，它允许算法的实现被动态加载，而不是直接编译到OpenSSL库中。这使得OpenSSL可以更灵活地支持新的加密算法，或者替换旧的算法实现。</p>
+</li>
+</ul>
+<p>你可以使用<code>openssl list -cipher-algorithms</code>命令来查看OpenSSL支持的所有加密算法，包括它们的来源（legacy或provided）。如果你想要使用某个特定的加密算法，你应该确保它是由你的OpenSSL版本支持的，并且是安全和适合你的需求的。</p>
+<p><strong>问：<code>{ 2.16.840.1.101.3.4.1.47, aes-256-ccm, id-aes256-CCM } @ default</code> 这是 <code>provided</code> 下的，解释</strong></p>
+<p><strong>答</strong>：这行信息描述了一个由OpenSSL的提供者框架（providers framework）提供的加密算法。</p>
+<ul>
+<li><p><code>2.16.840.1.101.3.4.1.47</code>：这是该加密算法的对象标识符（Object Identifier，OID）。OID是一种全球唯一的标识符，用于在各种系统和协议中唯一标识一个对象或实体。在这个例子中，它标识的是AES-256-CCM算法。</p>
+</li>
+<li><p><code>aes-256-ccm</code>：这是该加密算法的名称。AES-256-CCM是一种使用AES（Advanced Encryption Standard）算法和CCM（Counter with CBC-MAC）模式的加密算法。AES-256表示使用256位密钥的AES，CCM是一种提供加密和消息认证的模式。</p>
+</li>
+<li><p><code>id-aes256-CCM</code>：这是该加密算法的另一个名称或别名。</p>
+</li>
+<li><p><code>@ default</code>：这表示该加密算法是由默认的提供者提供的。在OpenSSL中，提供者是实现加密算法的模块，可以是内置的，也可以是第三方的。<code>default</code>是OpenSSL内置的一个提供者，它提供了大多数常用的加密算法。</p>
+</li>
+</ul>
+<p>总的来说，这行信息告诉我们，AES-256-CCM算法是由OpenSSL的默认提供者提供的，它的OID是<code>2.16.840.1.101.3.4.1.47</code>，并且它也可以被称为<code>id-aes256-CCM</code>。</p>
+<p><strong>问：AES 还有什么加密模式，为什么会有这些加密模式</strong></p>
+<p><strong>答</strong>：加密模式定义了如何使用块加密算法（如AES）来加密和解密数据。不同的加密模式有不同的特性和用途，选择哪种模式取决于你的具体需求和环境。以下是一些常见的加密模式及其特性：</p>
+<ol>
+<li><p>**ECB (Electronic Codebook)**：这是最简单的加密模式。每个明文块独立加密，与其他块无关。但是，它的安全性较低，因为相同的明文块会被加密为相同的密文块。</p>
+</li>
+<li><p>**CBC (Cipher Block Chaining)**：在这种模式下，每个明文块在加密前会与前一个密文块进行异或操作。这增加了加密的复杂性，因为每个密文块都依赖于它前面的所有明文块。</p>
+</li>
+<li><p>**CFB (Cipher Feedback)**：这是一种自同步的加密模式，它将对称加密算法转换为自同步的流式加密算法。</p>
+</li>
+<li><p>**OFB (Output Feedback)**：这是一种流式加密模式，它的工作方式类似于CFB，但是它在每一步中都会移位。</p>
+</li>
+<li><p>**CTR (Counter)**：这是一种流式加密模式，它将每个明文块与一个递增的计数器进行异或操作。</p>
+</li>
+<li><p>**GCM (Galois/Counter Mode)**：这是一种提供加密和数据源认证的加密模式。</p>
+</li>
+<li><p>**CCM (Counter with CBC-MAC)**：这是一种提供加密和数据源认证的加密模式，它结合了CTR模式和CBC模式。</p>
+</li>
+</ol>
+<p>为什么会有这些加密模式？因为在不同的应用场景和需求下，我们可能需要不同的加密特性。例如，有些场景需要加密数据的完整性和来源的验证（如GCM和CCM模式），有些场景需要数据的实时加密和解密（如CTR、CFB和OFB模式），有些场景需要更高的安全性（如CBC模式）。因此，我们需要不同的加密模式来满足这些不同的需求。</p>
+<p><strong>问：OpenSSL 生成无意义的二进制文件</strong></p>
+<p><strong>答</strong>：你可以使用OpenSSL的<code>rand</code>命令来生成一个无意义的二进制文件。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl rand -out random.bin 1024</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>rand</code>是OpenSSL的一个命令，用于生成随机数。</li>
+<li><code>-out random.bin</code>表示输出文件是<code>random.bin</code>。</li>
+<li><code>1024</code>是一个参数，表示要生成的随机数的字节数。</li>
+</ul>
+<p>这个命令会生成一个包含1024字节随机数据的文件<code>random.bin</code>。</p>
+<p>你可以根据需要更改这个命令。例如，如果你想生成一个更大的文件，你可以将<code>1024</code>更改为其他的数字。</p>
+<p><strong>问：1024 是指生成一个1024kb 的文件吗</strong></p>
+<p><strong>答</strong>：不是的，<code>1024</code>在这个命令中表示的是生成1024字节（即1KB）的随机数据。在计算机中，1KB等于1024字节。</p>
+<p>如果你想生成一个1024KB（即1MB）的文件，你应该使用<code>1048576</code>（即1024*1024）作为参数，如下所示：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl rand -out random.bin 1048576</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会生成一个包含1048576字节（即1024KB或1MB）随机数据的文件<code>random.bin</code>。</p>
+<p><strong>问：OpenSSL 支持用文件密钥和数字密钥一起加密的算法</strong></p>
+<p><strong>答</strong>：OpenSSL支持许多加密算法，其中一些可以使用文件密钥和数字密钥一起进行加密。在这种情况下，通常会使用一个密钥派生函数（如PBKDF2或scrypt）来从文件密钥和数字密钥派生出一个加密密钥。</p>
+<p>例如，你可以使用以下命令来使用AES-256-CBC模式和PBKDF2密钥派生函数进行加密：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plaintext.txt -out ciphertext.bin -pass file:./keyfile</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>enc -aes-256-cbc</code>表示使用AES-256-CBC模式进行加密。</li>
+<li><code>-pbkdf2</code>表示使用PBKDF2密钥派生函数。</li>
+<li><code>-in plaintext.txt</code>表示输入文件是<code>plaintext.txt</code>。</li>
+<li><code>-out ciphertext.bin</code>表示输出文件是<code>ciphertext.bin</code>。</li>
+<li><code>-pass file:./keyfile</code>表示密码是从文件<code>./keyfile</code>中读取的。</li>
+</ul>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的加密算法和密钥派生函数，并妥善保管你的密钥。</p>
+<p><strong>问：解密命令</strong></p>
+<p><strong>答</strong>：这条命令的解密版本如下：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -pbkdf2 -d -<span class="keyword">in</span> ciphertext.bin -out plaintext.txt -pass file:./keyfile</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>enc -aes-256-cbc -pbkdf2</code>表示使用AES-256-CBC模式和PBKDF2密钥派生函数。</li>
+<li><code>-d</code>表示进行解密操作。</li>
+<li><code>-in ciphertext.bin</code>表示输入文件是<code>ciphertext.bin</code>。</li>
+<li><code>-out plaintext.txt</code>表示输出文件是<code>plaintext.txt</code>。</li>
+<li><code>-pass file:./keyfile</code>表示密码是从文件<code>./keyfile</code>中读取的。</li>
+</ul>
+<p>这个命令会使用你的密钥文件解密<code>ciphertext.bin</code>文件，并将解密结果输出到<code>plaintext.txt</code>文件。</p>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的加密算法和密钥派生函数，并妥善保管你的密钥。</p>
+<p><strong>问：<code>openssl enc -aes-256-cbc -pbkdf2 -in plaintext.txt -out ciphertext.bin -pass file:./keyfile</code> 这个命令只用到了 密钥文件，没有用到密码</strong></p>
+<p><strong>答</strong>：是的，你是对的。在这个命令中，<code>-pass file:./keyfile</code>表示从文件<code>./keyfile</code>中读取密码。这个密码将被用作密钥派生函数PBKDF2的输入，生成用于AES-256-CBC加密的实际密钥。</p>
+<p>如果你想使用一个密码而不是一个文件，你可以使用<code>pass:password</code>代替<code>file:./keyfile</code>，例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl enc -aes-256-cbc -pbkdf2 -<span class="keyword">in</span> plaintext.txt -out ciphertext.bin -pass pass:mysecretpassword</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中，<code>mysecretpassword</code>是你的密码。这个密码将被用作PBKDF2的输入，生成用于AES-256-CBC加密的实际密钥。</p>
+<p>注意，这只是一个示例。实际使用时，你应该使用一个安全的密码，并且在命令行中直接输入密码可能会留下历史记录，这可能是一个安全风险。你应该考虑使用更安全的方式来提供密码，例如从文件或环境变量中读取。</p>
+<p><strong>问：我想要同时用密码和密钥文件加密的</strong></p>
+<p><strong>答</strong>：OpenSSL的<code>enc</code>命令不直接支持同时使用密码和密钥文件进行加密。但是，你可以使用一些技巧来实现这个需求。</p>
+<p>一种可能的方法是，你可以先使用你的密码和密钥文件生成一个新的密钥，然后使用这个新的密钥进行加密。你可以使用<code>openssl dgst</code>命令和<code>-hmac</code>选项来生成一个新的密钥，例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">password=$(<span class="built_in">cat</span> passwordfile)</span><br><span class="line">key=$(openssl dgst -sha256 -hmac <span class="string">"<span class="variable">${password}</span>"</span> -binary keyfile | xxd -p -c 256)</span><br><span class="line"><span class="built_in">echo</span> -n <span class="string">"<span class="variable">${key}</span>"</span> | xxd -r -p | openssl enc -aes-256-cbc -K /dev/stdin -<span class="keyword">in</span> plaintext.txt -out ciphertext.bin</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个例子中，<code>passwordfile</code>是包含你的密码的文件，<code>keyfile</code>是你的密钥文件。这个命令会使用你的密码和密钥文件生成一个新的密钥，然后使用这个新的密钥进行AES-256-CBC加密。</p>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的方法，并妥善保管你的密码和密钥。</p>
+<p><strong>问：啥意思</strong></p>
+<p><strong>答</strong>：这段代码的意思是，首先使用你的密码和密钥文件生成一个新的密钥，然后使用这个新的密钥进行AES-256-CBC加密。</p>
+<p>具体步骤如下：</p>
+<ol>
+<li><p><code>password=$(cat passwordfile)</code>：这行命令是从<code>passwordfile</code>文件中读取密码，并将其存储在<code>password</code>变量中。</p>
+</li>
+<li><p><code>key=$(openssl dgst -sha256 -hmac "${password}" -binary keyfile | xxd -p -c 256)</code>：这行命令是使用你的密码作为HMAC的密钥，对<code>keyfile</code>文件进行HMAC-SHA256运算，然后将运算结果转换为十六进制格式，并将其存储在<code>key</code>变量中。这个<code>key</code>就是你的新密钥。</p>
+</li>
+<li><p><code>echo -n "${key}" | xxd -r -p | openssl enc -aes-256-cbc -K /dev/stdin -in plaintext.txt -out ciphertext.bin</code>：这行命令是使用你的新密钥进行AES-256-CBC加密。首先，<code>echo -n "${key}" | xxd -r -p</code>是将你的新密钥从十六进制格式转换回二进制格式。然后，<code>openssl enc -aes-256-cbc -K /dev/stdin -in plaintext.txt -out ciphertext.bin</code>是使用你的新密钥对<code>plaintext.txt</code>文件进行AES-256-CBC加密，并将加密结果输出到<code>ciphertext.bin</code>文件。</p>
+</li>
+</ol>
+<p>这样，你就可以同时使用密码和密钥文件进行加密了。</p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/OpenSSL/">OpenSSL</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/AI%E7%94%9F%E6%88%90/">AI生成</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2024/02/28/%E5%9F%9F%E5%90%8D%E7%9A%84%E4%B8%80%E7%82%B9%E7%82%B9%E7%9F%A5%E8%AF%86/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          域名解析与子域名应用指南
+        </a>
+      
+    </div>
+    <div>
+      
+        <a href="/2024/02/28/linux-%E5%85%A5%E9%97%A8/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          linux 入门
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+  <!-- FILEPATH: /D:/workspace/myblog/themes/maple/layout/_partial/footer.ejs -->
+  <!-- BEGIN: ed8c6549bwf9 -->
+  <!-- share button -->
+  <div class="flex items-center gap-2">
+    <span>Share:</span>
+    <a href="https://www.facebook.com/sharer.php?u=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+    <a href="https://twitter.com/intent/tweet?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+    <a href="https://www.linkedin.com/shareArticle?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="https://t.me/share/url?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+  </div>
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <span>© 2024</span>
+    <a href="mailto:mylinkmail@foxmail.com" rel="noopener noreferrer">📫</a>
+  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Buttons</title>
+    
+    <!-- 引入 Font Awesome 图标样式 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <style>
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- 脚本 -->
+    <script>
+      var currentUrl = window.location.href;
+      document.querySelector('a[href="https://www.facebook.com/sharer.php?u=http://example.com"]').href = 'https://www.facebook.com/sharer.php?u=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://twitter.com/intent/tweet?url=http://example.com"]').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://www.linkedin.com/shareArticle?url=http://example.com"]').href = 'https://www.linkedin.com/shareArticle?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://t.me/share/url?url=http://example.com"]').href = 'https://t.me/share/url?url=' + encodeURIComponent(currentUrl);
+    </script>
+  </body>
+  </html>
+  <!-- END: ed8c6549bwf9 -->
+</html>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "0";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>

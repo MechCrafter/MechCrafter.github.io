@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <meta name="author" content="MechCrafter">
+
+
+  <meta name="subtitle" content="随笔✒️、记录🗓️、学习📚">
+
+
+
+
+<title>linux 入门 | JM&#39;s log 👋</title>
+
+
+
+<link rel="icon" href="/favicon.ico">
+
+
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/nprogress/nprogress.css">
+
+
+
+<script src="/lib/jquery.min.js"></script>
+
+
+<script src="/lib/iconify-icon.min.js"></script>
+
+
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+  };
+</script>
+
+
+<script src="/lib/nprogress/nprogress.js"></script>
+
+<script>
+  $(document).ready(() => {
+    NProgress.configure({
+      showSpinner: false,
+    });
+    NProgress.start();
+    $("#nprogress .bar").css({
+      background: "#de7441",
+    });
+    $("#nprogress .peg").css({
+      "box-shadow": "0 0 2px #de7441, 0 0 4px #de7441",
+    });
+    $("#nprogress .spinner-icon").css({
+      "border-top-color": "#de7441",
+      "border-left-color": "#de7441",
+    });
+    setTimeout(function () {
+      NProgress.done();
+      $(".fade").removeClass("out");
+    }, 800);
+  });
+</script>
+
+<script>
+  (function () {
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+    if (setting === "dark" || (prefersDark && setting !== "light"))
+      document.documentElement.classList.toggle("dark", true);
+    let isDark = document.documentElement.classList.contains("dark");
+  })();
+
+  $(document).ready(function () {
+    // init icon
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = document.documentElement.classList.contains("dark");
+    $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+
+    function toggleGiscusTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      const giscusFrame = document.querySelector("iframe.giscus-frame");
+      if (giscusFrame) {
+        giscusFrame.contentWindow.postMessage(
+          {
+            giscus: {
+              setConfig: {
+                theme: isDark ? "dark" : "light",
+              },
+            },
+          },
+          "https://giscus.app"
+        );
+      }
+    }
+
+
+    // toggle dark mode
+    function toggleDark() {
+      let isDark = document.documentElement.classList.contains("dark");
+      const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+      isDark = !isDark;
+      document.documentElement.classList.toggle("dark", isDark);
+      $("#theme-icon").attr("icon", isDark ? "ri:moon-line" : "ri:sun-line");
+      if (prefersDark === isDark) {
+        localStorage.setItem("hexo-color-scheme", "auto");
+      } else {
+        localStorage.setItem("hexo-color-scheme", isDark ? "dark" : "light");
+      }
+      toggleGiscusTheme();
+    }
+    $("#toggle-dark").click(toggleDark);
+
+    // listen dark mode change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (e) => {
+        const setting = localStorage.getItem("hexo-color-scheme") || "auto";
+        if (setting === "auto") {
+          document.documentElement.classList.toggle("dark", e.matches);
+          $("#theme-icon").attr(
+            "icon",
+            e.matches ? "ri:moon-line" : "ri:sun-line"
+          );
+          toggleGiscusTheme();
+        }
+      });
+  });
+</script>
+
+
+
+
+<meta name="generator" content="Hexo 7.1.1">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+<body class="font-sans bg-white dark:bg-zinc-900 text-gray-700 dark:text-gray-200 relative">
+  <header class="fixed w-full px-5 py-1 z-10 backdrop-blur-xl backdrop-saturate-150 border-b border-black/5">
+  <div class="max-auto">
+    <nav class="flex items-center text-base">
+      <a href="/" class="group">
+        <h2 class="font-medium tracking-tighterp text-l p-2">
+          <img class="w-5 mr-2 inline-block transition-transform group-hover:rotate-[30deg]" id="logo" src="/images/logo.svg" alt="JM's log 👋" />
+          JM&#39;s log 👋
+        </h2>
+      </a>
+      <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
+        linux 入门
+      </div>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-3">
+        
+          <a class="hidden sm:flex" href="/archives">Posts</a>
+        
+          <a class="hidden sm:flex" href="/category">Categories</a>
+        
+          <a class="hidden sm:flex" href="/tag">Tags</a>
+        
+        
+          
+            <a class="w-5 h-5 hidden sm:flex" title="Github" target="_blank" rel="noopener" href="https://github.com/MechCrafter">
+                      <iconify-icon width="20" icon="ri:github-line"></iconify-icon>
+                    </a>
+                  
+                
+                <!-- <a class="w-5 h-5 hidden sm:flex" title="Github" href="rss2.xml">
+                  <iconify-icon width="20" icon="ri:rss-line"></iconify-icon>
+                </a> -->
+                <a class="w-5 h-5" title="toggle theme" id="toggle-dark">
+                  <iconify-icon width="20" icon="" id="theme-icon"></iconify-icon>
+                </a>
+              </div>
+      <div class="flex items-center justify-center gap-3 ml-3 sm:hidden">
+        <span class="w-5 h-5" aria-hidden="true" role="img" id="open-menu">
+          <iconify-icon width="20" icon="carbon:menu" ></iconify-icon>
+        </span>
+        <span class="w-5 h-5 hidden" aria-hidden="true" role="img" id="close-menu">
+          <iconify-icon  width="20" icon="carbon:close" ></iconify-icon>
+        </span>
+      </div>
+    </nav>
+  </div>
+</header>
+<div id="menu-panel" class="h-0 overflow-hidden sm:hidden fixed left-0 right-0 top-12 bottom-0 z-10">
+  <div id="menu-content" class="relative z-20 bg-white/80 px-6 sm:px-8 py-2 backdrop-blur-xl -translate-y-full transition-transform duration-300">
+    <ul class="nav flex flex-col sm:flex-row text-sm font-medium">
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/archives" class="flex h-12 sm:h-auto items-center">Posts</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/category" class="flex h-12 sm:h-auto items-center">Categories</a>
+        </li>
+      
+        <li class="nav-portfolio sm:mx-2 border-b sm:border-0 border-black/5 last:border-0 hover:text-main">
+          <a href="/tag" class="flex h-12 sm:h-auto items-center">Tags</a>
+        </li>
+      
+    </ul>
+  </div>
+  <div class="mask bg-black/20 absolute inset-0"></div>
+</div>
+
+  <main class="pt-14">
+    <!-- css -->
+
+<link rel="stylesheet" href="/lib/fancybox/fancybox.min.css">
+
+
+<link rel="stylesheet" href="/lib/tocbot/tocbot.min.css">
+
+<!-- toc -->
+
+  <!-- tocbot -->
+<nav class="post-toc toc text-sm w-48 relative top-32 right-0 opacity-70 hidden lg:block" style="position: fixed !important;"></nav>
+
+
+<section class="px-6 max-w-prose mx-auto md:px-0">
+  <!-- header -->
+  <header class="overflow-hidden pt-6 pb-6 md:pt-12">
+    <div class="pt-4 md:pt-6">
+      <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
+        linux 入门
+      </h1>
+      <div>
+        <section class="flex items-center gap-3 text-sm">
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
+            <time>2024-03-25</time>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
+            <span>33 min</span>
+          </span>
+          <span class="text-gray-400">·</span>
+          <span class="flex items-center gap-1">
+            <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
+            <span>9.2k words</span>
+          </span>
+          
+            <span class="text-gray-400">·</span>
+            <span class="flex items-center gap-1">
+              <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
+              <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+            </span>
+          
+        </section>
+      </div>
+    </div>
+  </header>
+  <!-- content -->
+  <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
+    <p>本学习笔记是用 Ubuntu 系统上的命令行操作来记录的。</p>
+<h1 id="Linux-的起源"><a href="#Linux-的起源" class="headerlink" title="Linux 的起源"></a>Linux 的起源</h1><p>“Unix-like” 是一个通用术语，用于描述那些类似于 Unix 的操作系统。Unix 是在 20 世纪 70 年代由 AT&amp;T 的贝尔实验室开发的一个操作系统。许多现代操作系统，包括 Linux、macOS、BSD 等，都是基于 Unix 或者受到 Unix 的影响。</p>
+<p>Linux 是 Unix-like 系统的一种，它是由 Linus Torvalds 在 1991 年创建的。Linux 保留了 Unix 的许多特性和设计理念，例如文件系统的层次结构、权限模型、进程管理等。但是，Linux 是完全开源的，任何人都可以查看和修改它的源代码。</p>
+<p>所以，Unix-like 系统和 Linux 系统的主要联系是，Linux 是 Unix-like 系统的一种，它们共享许多相同的特性和设计理念。</p>
+<h2 id="Unix-like-的另一种"><a href="#Unix-like-的另一种" class="headerlink" title="Unix-like 的另一种"></a>Unix-like 的另一种</h2><p>BSD（Berkeley Software Distribution）是 Unix 操作系统的一个版本，最初由加利福尼亚大学伯克利分校（University of California, Berkeley）开发。BSD 最初是作为 Unix 的一个补丁集发布的，后来发展成为一个完整的操作系统。</p>
+<p>BSD 系统以其稳定性和强大的网络功能而闻名。它的许多特性，如 TCP/IP 网络协议栈和虚拟内存系统，都被广泛地应用在其他的 Unix-like 系统中，包括 Linux。</p>
+<p>现在的 BSD 系统主要有 FreeBSD、OpenBSD、NetBSD 等几个主要的版本。这些系统都是开源的，任何人都可以查看和修改它们的源代码。</p>
+<h2 id="BSD-与-Linux-的区别"><a href="#BSD-与-Linux-的区别" class="headerlink" title="BSD 与 Linux 的区别"></a>BSD 与 Linux 的区别</h2><p>BSD 和 Linux 都是 Unix-like 的操作系统，它们有许多共同的特性，如使用类似的 shell 环境、文件系统结构等。然而，它们也有一些重要的区别：</p>
+<ol>
+<li><p><strong>许可证</strong>：Linux 使用的是 GPL（GNU General Public License）许可证，这是一种 copyleft 的许可证，要求任何修改和分发的版本必须以相同的许可证开源。而 BSD 使用的是 BSD 许可证，这是一种 permissive 的许可证，允许源代码被修改和重新分发，而不强制要求开源。</p>
+</li>
+<li><p><strong>发行版</strong>：Linux 有许多不同的发行版，如 Ubuntu、Fedora、Debian 等，它们可能会有不同的包管理器、默认的桌面环境等。而 BSD 主要有 FreeBSD、OpenBSD、NetBSD 等几个主要的版本。</p>
+</li>
+<li><p><strong>内核和用户空间</strong>：在 Linux 中，内核和大部分用户空间工具（如 shell、文件系统工具等）是分开开发的，例如很多工具是由 GNU 项目提供的。而在 BSD 中，内核和用户空间工具是作为一个整体一起开发的，这可能会带来更好的一致性和集成度。</p>
+</li>
+<li><p><strong>性能和稳定性</strong>：虽然这在很大程度上取决于具体的配置和使用情况，但是一般来说，BSD 系统被认为在网络性能和稳定性方面表现优秀，而 Linux 则在硬件支持和应用软件兼容性方面更强。</p>
+</li>
+</ol>
+<p>这些只是一些基本的区别，具体的差异可能会根据不同的 Linux 发行版和 BSD 版本而变化。</p>
+<h2 id="Windows-算不算-Unix-like-的一种"><a href="#Windows-算不算-Unix-like-的一种" class="headerlink" title="Windows 算不算 Unix-like 的一种"></a>Windows 算不算 Unix-like 的一种</h2><p>不，Windows 不是 Unix-like 系统的一种。Windows 和 Unix（以及 Unix-like 系统，如 Linux 和 BSD）有着根本的区别。</p>
+<p>首先，Windows 和 Unix-like 系统在设计理念上有很大的不同。例如，Unix-like 系统使用一种称为“一切皆文件”的设计理念，这意味着系统中的所有东西，包括硬件设备和网络连接，都被表示为文件。而 Windows 则没有这种设计。</p>
+<p>其次，Windows 和 Unix-like 系统在操作方式上也有很大的不同。例如，Unix-like 系统通常使用命令行接口，而 Windows 则主要使用图形用户界面。</p>
+<p>最后，Windows 和 Unix-like 系统在内核设计、文件系统、权限管理等许多技术细节上也有很大的不同。</p>
+<p>虽然 Windows 提供了一些工具和服务（如 Windows Subsystem for Linux）来模拟 Unix-like 系统的行为，但这并不意味着 Windows 是 Unix-like 系统的一种。</p>
+<h1 id="Linux-的文件系统结构是怎样的"><a href="#Linux-的文件系统结构是怎样的" class="headerlink" title="Linux 的文件系统结构是怎样的"></a>Linux 的文件系统结构是怎样的</h1><p>在 Ubuntu（以及其他 Unix-like 系统）中，所有的文件和目录都组织在一个单一的、层次化的目录结构中，这被称为文件系统。文件系统的根是 <code>/</code>，所有其他文件和目录都挂载在这个根目录下。</p>
+<p>例如，<code>/etc</code> 目录用于存储系统级别的配置文件，<code>/home</code> 目录用于存储用户的个人文件，<code>/usr</code> 目录用于存储用户级别的程序和数据等。</p>
+<p>在 Ubuntu 中，你可以将不同的物理设备（如硬盘分区、USB 驱动器等）挂载到文件系统的任何位置。例如，你可以将一个硬盘分区挂载到 <code>/home</code>，这样这个分区就可以用于存储用户的个人文件，类似于 Windows 中的 D 盘。</p>
+<p>总的来说，Ubuntu 的文件系统提供了一种统一的方式来访问和管理所有的文件和目录，无论它们实际上存储在哪个物理设备上。</p>
+<h2 id="除了根目录-之外，还有哪些常见的目录？"><a href="#除了根目录-之外，还有哪些常见的目录？" class="headerlink" title="除了根目录 / 之外，还有哪些常见的目录？"></a>除了根目录 <code>/</code> 之外，还有哪些常见的目录？</h2><p>在 Ubuntu（以及其他 Unix-like 系统）中，与 <code>/home</code> 目录平级的目录通常包括以下几个：</p>
+<ul>
+<li><code>/bin</code>：存储系统必需的可执行文件（命令）。</li>
+<li><code>/boot</code>：存储启动加载器和内核文件。</li>
+<li><code>/dev</code>：设备文件目录，包括硬件设备接口文件。</li>
+<li><code>/etc</code>：系统级别的配置文件目录。</li>
+<li><code>/lib</code>：系统库文件目录。</li>
+<li><code>/media</code>：可移动媒体设备（如 USB 设备）的挂载点。</li>
+<li><code>/mnt</code>：临时文件系统的挂载点。</li>
+<li><code>/opt</code>：可选的应用软件包目录。</li>
+<li><code>/proc</code>：一个虚拟的文件系统，用于访问内核和进程状态信息。</li>
+<li><code>/root</code>：root 用户的家目录。</li>
+<li><code>/sbin</code>：系统二进制文件目录，包含一些需要系统管理员权限的命令。</li>
+<li><code>/srv</code>：服务数据目录，用于存储服务器应用的数据。</li>
+<li><code>/sys</code>：一个虚拟的文件系统，用于访问和修改内核的设备和驱动信息。</li>
+<li><code>/tmp</code>：临时文件目录，系统重启时会被清空。</li>
+<li><code>/usr</code>：用户级别的程序和数据目录。</li>
+<li><code>/var</code>：变量数据目录，用于存储经常变化的数据，如日志文件和邮件队列。</li>
+</ul>
+<p>这些目录的具体内容可能会根据你的系统配置和使用情况而变化。</p>
+<h2 id="各级目录的一些信息"><a href="#各级目录的一些信息" class="headerlink" title="各级目录的一些信息"></a>各级目录的一些信息</h2><p>在 Ubuntu（以及其他 Unix-like 系统）中，一级目录下的子目录结构可能会根据系统的具体配置和使用情况而变化。以下是一些常见的子目录：</p>
+<ul>
+<li><code>/bin</code>：这个目录下通常没有子目录，只包含可执行文件（命令）。</li>
+<li><code>/boot</code>：包含 <code>grub</code>（启动加载器的配置文件）和各种内核文件。</li>
+<li><code>/dev</code>：包含各种设备文件，如 <code>sda</code>（硬盘）、<code>tty</code>（终端）等。</li>
+<li><code>/etc</code>：包含各种配置文件和子目录，如 <code>apache2</code>（Apache 服务器的配置文件）、<code>ssh</code>（SSH 的配置文件）等。</li>
+<li><code>/home</code>：每个用户都有一个子目录，子目录的名字就是用户名。</li>
+<li><code>/lib</code>：包含各种库文件和子目录，如 <code>systemd</code>（系统服务的库文件）等。</li>
+<li><code>/media</code>：当你插入一个可移动媒体设备（如 USB 设备）时，系统会在这个目录下创建一个子目录作为设备的挂载点。</li>
+<li><code>/mnt</code>：你可以在这个目录下创建子目录，然后将临时文件系统挂载到这些子目录上。</li>
+<li><code>/opt</code>：每个可选的应用软件包通常都有一个子目录，子目录的名字就是软件包的名字。</li>
+<li><code>/proc</code>：这个目录下的子目录和文件都是虚拟的，用于访问内核和进程状态信息。</li>
+<li><code>/root</code>：这个目录下的子目录和文件都属于 root 用户。</li>
+<li><code>/sbin</code>：这个目录下通常没有子目录，只包含可执行文件（命令）。</li>
+<li><code>/srv</code>：这个目录下的子目录结构通常会根据服务器应用的需求而变化。</li>
+<li><code>/sys</code>：这个目录下的子目录和文件都是虚拟的，用于访问和修改内核的设备和驱动信息。</li>
+<li><code>/tmp</code>：这个目录下的子目录和文件都是临时的，系统重启时会被清空。</li>
+<li><code>/usr</code>：这个目录下包含各种子目录，如 <code>bin</code>（用户级别的可执行文件）、<code>lib</code>（用户级别的库文件）、<code>share</code>（共享数据）等。</li>
+<li><code>/var</code>：这个目录下包含各种子目录，如 <code>log</code>（日志文件）、<code>mail</code>（邮件队列）、<code>www</code>（网页文件）等。</li>
+</ul>
+<p>这些只是一些常见的子目录，具体的子目录可能会根据你的系统配置和使用情况而变化。</p>
+<h1 id="进入-Ubuntu"><a href="#进入-Ubuntu" class="headerlink" title="进入 Ubuntu"></a>进入 Ubuntu</h1><p>当你登录 Ubuntu 系统后，你通常会在你的家目录下。每个用户都有一个家目录，用于存储用户的个人文件。家目录的路径通常是 <code>/home/用户名</code>，例如，如果你的用户名是 <code>john</code>，那么你的家目录就是 <code>/home/john</code>。</p>
+<p>你可以使用 <code>pwd</code> 命令（print working directory，打印工作目录）来查看你当前所在的目录。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">pwd</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会在终端中显示你当前所在的目录的路径。</p>
+<h2 id="man-命令"><a href="#man-命令" class="headerlink" title="man 命令"></a>man 命令</h2><p><code>man</code> 命令是 Linux 系统中的一个命令，用于查看命令或程序的文档。你可以使用 <code>man</code> 命令来查看任何命令或程序的文档，包括系统命令和用户自定义的程序。</p>
+<p>要查看 <code>man</code> 命令的文档，你可以使用以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man man</span><br></pre></td></tr></tbody></table></figure>
+<p>这将显示 <code>man</code> 命令的文档。</p>
+<p>你还可以使用 <code>man</code> 命令来查看其他命令或程序的文档，例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man <span class="built_in">ls</span></span><br></pre></td></tr></tbody></table></figure>
+<p>这将显示 <code>ls</code> 命令的文档。</p>
+<p>要退出文档，你可以按 <code>q</code> 键。</p>
+<h2 id="sudo-命令"><a href="#sudo-命令" class="headerlink" title="sudo 命令"></a>sudo 命令</h2><p><code>sudo</code> 是一个 Linux 命令，全称是 “Super User Do”。它允许普通用户执行需要超级用户（也就是 root 用户）权限的命令。</p>
+<p>当你在一个命令前面加上 <code>sudo</code>，系统会要求你输入你的密码，然后这个命令就会以超级用户的身份执行。这是一种安全机制，可以防止用户无意中执行可能会破坏系统的命令。</p>
+<p>例如，如果你想要安装一个新的软件包，你可能需要使用 <code>sudo</code> 命令，因为这通常需要超级用户权限：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install example-package</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个例子中，<code>sudo</code> 命令让你以超级用户的身份运行 <code>apt install example-package</code> 命令。</p>
+<p>请注意，不是所有的用户都可以使用 <code>sudo</code> 命令。只有在 sudoers 文件中列出的用户或用户组才可以使用 <code>sudo</code> 命令。</p>
+<h2 id="cd-命令"><a href="#cd-命令" class="headerlink" title="cd 命令"></a>cd 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>cd</code> 命令（change directory，改变目录）来跳转到其他目录。例如，如果你想跳转到 <code>/etc</code> 目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /etc</span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果你想跳转到你的家目录，你可以使用 <code>cd</code> 命令，后面不跟任何参数：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>你也可以使用 <code>~</code> 符号来表示你的家目录。例如，如果你想跳转到你的家目录下的 <code>Documents</code> 目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Documents</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在 Ubuntu 系统中，你可以使用 <code>cd</code> 命令（change directory，改变目录）来跳转到其他目录。如果你想跳转到 <code>/</code> 目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将你的工作目录切换到 <code>/</code> 目录。</p>
+<p>请注意，目录路径可以是绝对路径，也可以是相对路径。绝对路径是从根目录 <code>/</code> 开始的路径，相对路径是从当前目录开始的路径。例如，如果你当前在 <code>/etc</code> 目录，你可以使用相对路径来跳转到 <code>/etc/apache2</code> 目录：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> apache2</span><br></pre></td></tr></tbody></table></figure>
+<h2 id="touch-命令"><a href="#touch-命令" class="headerlink" title="touch 命令"></a>touch 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>touch</code> 命令来创建一个新的空文件。例如，如果你想创建一个名为 <code>example.txt</code> 的文件，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> example.txt</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会在当前目录下创建一个名为 <code>example.txt</code> 的新文件。如果文件已经存在，<code>touch</code> 命令不会覆盖原有的文件，而是更新文件的访问和修改时间。</p>
+<p>如果你想在其他目录下创建文件，你可以在文件名前面加上目录的路径。例如，如果你想在 <code>/tmp</code> 目录下创建一个名为 <code>example.txt</code> 的文件，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> /tmp/example.txt</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请注意，如果目录不存在或者你没有权限在该目录下创建文件，这个命令会失败，并在终端中显示一个错误消息。</p>
+<h2 id="vim-的退出命令"><a href="#vim-的退出命令" class="headerlink" title="vim 的退出命令"></a>vim 的退出命令</h2><p>在 Vim 编辑器中，你可以使用以下步骤来退出：</p>
+<ol>
+<li><p>首先，确保你处于命令模式。如果你正在插入模式或其他模式，按 <code>Esc</code> 键可以回到命令模式。</p>
+</li>
+<li><p>在命令模式下，输入 <code>:q</code>，然后按 <code>Enter</code> 键。这将退出 Vim。</p>
+</li>
+</ol>
+<p>如果你已经修改了文件，Vim 会阻止你退出，除非你保存修改或者明确告诉 Vim 放弃修改。以下是一些相关的命令：</p>
+<ul>
+<li><code>:wq</code>：保存修改，然后退出 Vim。</li>
+<li><code>:q!</code>：不保存修改，强制退出 Vim。</li>
+<li><code>:wq!</code>：保存修改，强制退出 Vim。</li>
+</ul>
+<p>请注意，所有这些命令都需要在命令模式下输入。</p>
+<h2 id="mkdir-命令"><a href="#mkdir-命令" class="headerlink" title="mkdir 命令"></a>mkdir 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>mkdir</code> 命令来创建一个新的目录。例如，如果你想创建一个名为 <code>example</code> 的目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会在当前目录下创建一个名为 <code>example</code> 的目录。如果你想在其他目录下创建目录，你可以在目录名前面加上目录的路径。例如，如果你想在 <code>/tmp</code> 目录下创建一个名为 <code>example</code> 的目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /tmp/example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请注意，如果目录已经存在或者你没有权限在该目录下创建目录，这个命令会失败，并在终端中显示一个错误消息。</p>
+<h2 id="cp-命令"><a href="#cp-命令" class="headerlink" title="cp 命令"></a>cp 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>cp</code> 命令来复制文件和目录。例如，如果你想将一个名为 <code>example.txt</code> 的文件复制到当前目录下的一个名为 <code>example</code> 的目录中，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> example.txt example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会在当前目录下创建一个名为 <code>example</code> 的目录，并将 <code>example.txt</code> 文件复制到该目录中。如果你想在其他目录下复制文件或目录，你可以在文件名或目录名前面加上目录的路径。例如，如果你想将一个名为 <code>example.txt</code> 的文件复制到 <code>/tmp</code> 目录下的一个名为 <code>example</code> 的目录中，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> /tmp/example.txt /tmp/example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请注意，<code>cp</code> 命令会复制文件或目录，而不会在目标位置创建一个新的文件或目录。如果你想在目标位置创建一个新的文件或目录，你可以使用 <code>-r</code>（或 <code>--recursive</code>）选项。例如，如果你想将一个名为 <code>example</code> 的目录及其中的所有文件和子目录复制到 <code>/tmp</code> 目录下的一个名为 <code>example</code> 的目录中，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cp</span> -r example /tmp</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请注意，<code>cp</code> 命令会复制文件和目录，而不会复制它们的权限、所有者和组。如果你需要复制文件的权限、所有者和组，你可以使用 <code>-p</code>（或 <code>--preserve</code>）选项。</p>
+<h2 id="mv-命令"><a href="#mv-命令" class="headerlink" title="mv 命令"></a>mv 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>mv</code> 命令来移动文件和目录。例如，如果你想将一个名为 <code>example.txt</code> 的文件移动到当前目录下的一个名为 <code>example</code> 的目录中，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> example.txt example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将 <code>example.txt</code> 文件移动到当前目录下的一个名为 <code>example</code> 的目录中。如果你想在其他目录下移动文件或目录，你可以在文件名或目录名前面加上目录的路径</p>
+<p>例如，如果你想将一个名为 <code>example.txt</code> 的文件移动到 <code>/tmp</code> 目录下的一个名为 <code>example</code> 的目录中</p>
+<p>你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> /tmp/example.txt /tmp/example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将 <code>example.txt</code> 文件移动到 <code>/tmp</code> 目录下的一个名为 <code>example</code> 的目录中。如果你想在目标位置创建一个新的文件或目录，你可以使用 <code>-r</code>（或 <code>--recursive</code>）选项。例如，如果你想将一个名为 <code>example</code> 的目录及其中的所有文件和子目录移动到 <code>/tmp</code> 目录下的一个名为 <code>example</code> 的目录中，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> -r example /tmp</span><br></pre></td></tr></tbody></table></figure>
+
+<h2 id="cat-命令"><a href="#cat-命令" class="headerlink" title="cat 命令"></a>cat 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>cat</code> 命令来查看文件的内容。例如，如果你想查看一个名为 <code>example.txt</code> 的文件的内容</p>
+<p>你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> example.txt</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会输出 <code>example.txt</code> 文件的内容到终端上。如果你想在其他目录下查看文件的内容，你可以在文件名前面加上目录的路径</p>
+<p>例如，如果你想查看 <code>/tmp</code> 目录下的一个名为 <code>example.txt</code> 的文件的内容</p>
+<p>你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /tmp/example.txt</span><br></pre></td></tr></tbody></table></figure>
+<p>这个命令会输出 <code>/tmp/example.txt</code> 文件的内容到终端上。</p>
+<h2 id="rm-命令"><a href="#rm-命令" class="headerlink" title="rm 命令"></a>rm 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>rm</code> 命令来删除文件和目录。</p>
+<ul>
+<li><p>删除文件：如果你想删除一个名为 <code>example.txt</code> 的文件，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">rm</span> example.txt</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>删除目录：如果你想删除一个名为 <code>example</code> 的目录，你需要使用 <code>-r</code>（或 <code>--recursive</code>）选项来递归删除目录和目录中的文件。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">rm</span> -r example</span><br></pre></td></tr></tbody></table></figure></li>
+</ul>
+<p>请注意，<code>rm</code> 命令会永久删除文件和目录，不会将它们移动到回收站。如果你删除了一个文件或目录，你将无法恢复它。因此，使用 <code>rm</code> 命令时需要特别小心。</p>
+<h2 id="ls-命令"><a href="#ls-命令" class="headerlink" title="ls 命令"></a>ls 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>ls</code> 命令来列出一个目录下的所有文件和目录。例如，如果你想查看当前目录下的所有文件和目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p>如果你想查看其他目录下的所有文件和目录，你可以在 <code>ls</code> 命令后面加上目录的路径。例如，如果你想查看 <code>/etc</code> 目录下的所有文件和目录，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> /etc</span><br></pre></td></tr></tbody></table></figure>
+
+<p>你还可以使用 <code>-l</code> 选项来查看文件和目录的详细信息，包括文件大小、文件修改时间和文件权限。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> -l</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会以列表的形式显示当前目录下的所有文件和目录的详细信息。</p>
+<h2 id="ps-命令"><a href="#ps-命令" class="headerlink" title="ps 命令"></a>ps 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>ps</code> 命令来查看当前正在运行的进程。例如，你可以输入以下命令来查看所有的进程：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示一个列表，列出了所有正在运行的进程的详细信息，包括进程 ID、进程的状态、CPU 使用率、内存使用率、运行进程的用户等。</p>
+<p>如果你只对某个特定的进程感兴趣，你可以使用 <code>grep</code> 命令来过滤结果。例如，如果你想查看所有名为 <code>example</code> 的进程，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示所有名为 <code>example</code> 的进程。</p>
+<h2 id="kill-命令"><a href="#kill-命令" class="headerlink" title="kill 命令"></a>kill 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>kill</code> 命令来停止一个进程。<code>kill</code> 命令需要一个进程 ID（PID）作为参数。</p>
+<p>以下是使用 <code>kill</code> 命令停止进程的基本步骤：</p>
+<ol>
+<li><p>首先，你需要知道你想要停止的进程的 PID。你可以使用 <code>ps</code> 命令来查看所有正在运行的进程和它们的 PID。例如，如果你想查看所有名为 <code>example</code> 的进程，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep example</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>然后，你可以使用 <code>kill</code> 命令来停止进程。例如，如果你想停止 PID 为 1234 的进程，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">kill</span> 1234</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，你需要替换 1234 为你想要停止的进程的 PID。你可能需要输入你的密码，因为 <code>kill</code> 命令可能需要管理员权限。</p>
+<p>如果 <code>kill</code> 命令不能停止一个进程，你可以使用 <code>-9</code> 选项来强制停止进程。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">kill</span> -9 1234</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会强制停止 PID 为 1234 的进程。</p>
+<h1 id="Ubuntu-软件源问题"><a href="#Ubuntu-软件源问题" class="headerlink" title="Ubuntu 软件源问题"></a>Ubuntu 软件源问题</h1><p>Ubuntu 的默认软件源是 Ubuntu 的官方软件仓库，它包含了大量的免费和开源软件。这些软件仓库被分为几个部分，包括：</p>
+<ul>
+<li><p>Main：这部分包含了 Ubuntu 支持的免费和开源软件。这些软件都遵循 Ubuntu 的许可协议，包括 GPL 和其他开源许可协议。</p>
+</li>
+<li><p>Universe：这部分包含了由社区维护的免费和开源软件。这些软件可能不会得到 Ubuntu 的官方支持。</p>
+</li>
+<li><p>Restricted：这部分包含了一些由于法律或者版权问题，Ubuntu 不能包含在 Main 部分的软件。</p>
+</li>
+<li><p>Multiverse：这部分包含了不符合 Ubuntu 的许可协议，但是可以在 Ubuntu 上使用的软件。</p>
+</li>
+</ul>
+<p>你可以在 <code>/etc/apt/sources.list</code> 文件中查看你的系统的软件源设置。你也可以使用 <code>Software &amp; Updates</code> 工具来查看和修改你的软件源设置。可以用 <code>vi /etc/apt/sources.list</code> 命令来查看软件源</p>
+<h2 id="dpkg-命令"><a href="#dpkg-命令" class="headerlink" title="dpkg 命令"></a>dpkg 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>dpkg</code> 命令来查看已安装的软件包。<code>dpkg</code> 是 Debian 和 Ubuntu 系统的软件包管理工具。你可以使用 <code>-l</code> 选项来列出所有已安装的软件包。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dpkg -l</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示一个列表，列出了你的系统中所有已安装的软件包，包括软件包的名称、版本、架构和描述。</p>
+<p>如果你只对某个特定的软件包感兴趣，你可以使用 <code>grep</code> 命令来过滤结果。例如，如果你想查看是否安装了 <code>vim</code>，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dpkg -l | grep vim</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示所有名称中包含 <code>vim</code> 的软件包。</p>
+<h2 id="apt-命令"><a href="#apt-命令" class="headerlink" title="apt 命令"></a>apt 命令</h2><p>在 Ubuntu 系统中，你可以使用 <code>apt</code> 命令来卸载软件。<code>apt</code> 是 Ubuntu 的软件包管理工具，可以用来安装、更新和删除软件包。</p>
+<p>以下是使用 <code>apt</code> 命令卸载软件的基本步骤：</p>
+<ol>
+<li><p>首先，你需要知道你想要卸载的软件包的准确名称。你可以使用 <code>dpkg -l</code> 命令来查看所有已安装的软件包。</p>
+</li>
+<li><p>然后，你可以使用 <code>apt remove</code> 命令来卸载软件。例如，如果你想卸载一个名为 <code>example</code> 的软件包，你可以输入以下命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt remove example</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，你需要替换 <code>example</code> 为你想要卸载的软件包的名称。你可能需要输入你的密码，因为 <code>sudo</code> 命令需要管理员权限。</p>
+<p>如果你想完全卸载一个软件包，包括它的配置文件，你可以使用 <code>apt purge</code> 命令。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt purge example</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会卸载 <code>example</code> 软件包，并且删除它的配置文件。</p>
+<h1 id="Linux-的一些其它命令"><a href="#Linux-的一些其它命令" class="headerlink" title="Linux 的一些其它命令"></a>Linux 的一些其它命令</h1><h2 id="shutdown-命令"><a href="#shutdown-命令" class="headerlink" title="shutdown 命令"></a>shutdown 命令</h2><p>在 Linux 系统中，你可以使用 <code>shutdown</code> 命令来关机。以下是一些常见的使用方式：</p>
+<ol>
+<li><p>立即关机：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo shutdown now</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在特定的时间关机，例如在 10 分钟后：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo shutdown +10</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在特定的时刻关机，例如在今天的 23:00：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo shutdown 23:00</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，<code>shutdown</code> 命令需要管理员权限，所以你需要使用 <code>sudo</code> 命令。</p>
+<p>另外，你也可以使用 <code>poweroff</code> 命令来立即关机：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo poweroff</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这些命令在大多数 Linux 发行版中都应该可以工作。</p>
+<h2 id="reboot-命令"><a href="#reboot-命令" class="headerlink" title="reboot 命令"></a>reboot 命令</h2><p>在 Linux 系统中，你可以使用 <code>reboot</code> 命令来重启计算机。以下是一些常见的使用方式：</p>
+<ol>
+<li><p>立即重启：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo reboot</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在特定的时间重启，例如在 10 分钟后：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo reboot +10</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在特定的时刻重启，例如在今天的 23:00：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo reboot 23:00</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，<code>reboot</code> 命令需要管理员权限，所以你需要使用 <code>sudo</code> 命令。</p>
+<p>这些命令在大多数 Linux 发行版中都应该可以工作。</p>
+<h2 id="date-命令"><a href="#date-命令" class="headerlink" title="date 命令"></a>date 命令</h2><p>在 Linux 系统中，你可以使用 <code>date</code> 命令来查看或设置系统时间。以下是一些常见的使用方式：</p>
+<ol>
+<li><p>立即显示当前时间：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">date</span></span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>设置系统时间为当前时间加 1 小时：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">date</span> -s <span class="string">"1 hour ago"</span></span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>设置系统时间为指定的时间，例如 2022-01-01 00:00:00：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">date</span> -s <span class="string">"2022-01-01 00:00:00"</span></span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，<code>date</code> 命令需要管理员权限，所以你需要使用 <code>sudo</code> 命令。</p>
+<h2 id="top-命令"><a href="#top-命令" class="headerlink" title="top 命令"></a>top 命令</h2><p>在 Linux 系统中，你可以使用 <code>top</code> 命令来查看系统资源的使用情况。以下是一些常见的使用方式：</p>
+<ol>
+<li><p>立即显示 <code>top</code> 命令的输出：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>每秒更新一次 <code>top</code> 命令的输出：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top -d 1</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>显示每个进程的详细信息：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">top -o %MEM</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>请注意，<code>top</code> 命令会持续显示系统资源的使用情况，直到你按下 <code>q</code> 键退出。</p>
+<p><strong>问：<code>./</code> 是什么意思</strong></p>
+<p><strong>答</strong>：在 Unix 和类 Unix 系统（包括 Linux 和 macOS）中，<code>./</code> 是一个特殊的目录路径，表示当前目录。</p>
+<p>例如，如果你在命令行中输入 <code>./sometext.txt</code>，这表示你想要访问当前目录下名为 <code>sometext.txt</code> 的文件。</p>
+<p>同样，如果你在命令行中输入 <code>./somedirectory/</code>，这表示你想要访问当前目录下名为 <code>somedirectory</code> 的子目录。</p>
+<p>这个符号在很多命令行操作中都很常见，例如在运行可执行文件或者指定文件路径时。</p>
+<p><strong>问：linux 压缩文件命令</strong></p>
+<p><strong>答</strong>：在 Linux 系统中，你可以使用 <code>tar</code> 命令来压缩文件或文件夹。以下是一些常用的 <code>tar</code> 命令示例：</p>
+<ol>
+<li><p>压缩一个文件夹：</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -czf archive.tar.gz /path/to/your/directory</span><br></pre></td></tr></tbody></table></figure>
+
+<p> 这个命令会将 <code>/path/to/your/directory</code> 文件夹压缩成一个 <code>archive.tar.gz</code> 文件。</p>
+</li>
+<li><p>压缩多个文件：</p>
+ <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -czf archive.tar.gz /path/to/file1 /path/to/file2</span><br></pre></td></tr></tbody></table></figure>
+
+<p> 这个命令会将 <code>/path/to/file1</code> 和 <code>/path/to/file2</code> 压缩成一个 <code>archive.tar.gz</code> 文件。</p>
+</li>
+</ol>
+<p>在这些命令中，<code>-czf</code> 是 <code>tar</code> 命令的选项：</p>
+<ul>
+<li><code>-c</code> 表示创建新的归档文件。</li>
+<li><code>-z</code> 表示使用 gzip 进行压缩。</li>
+<li><code>-f</code> 表示后面跟着的是要创建的归档文件名。</li>
+</ul>
+<p>请将 <code>/path/to/your/directory</code>、<code>/path/to/file1</code>、<code>/path/to/file2</code> 和 <code>archive.tar.gz</code> 替换为你实际的文件或目录路径和归档文件名。</p>
+<p><strong>问：压缩当前文件夹下的文件</strong></p>
+<p><strong>答</strong>：如果你想压缩当前目录下的所有文件和子目录，你可以使用 <code>.</code> 来表示当前目录。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -czf archive.tar.gz .</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将当前目录下的所有文件和子目录压缩成一个 <code>archive.tar.gz</code> 文件。</p>
+<p>如果你只想压缩当前目录下的文件，不包括子目录，你可以使用 <code>*</code> 来匹配当前目录下的所有文件。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -czf archive.tar.gz *</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将当前目录下的所有文件（不包括子目录）压缩成一个 <code>archive.tar.gz</code> 文件。</p>
+<p>请将 <code>archive.tar.gz</code> 替换为你想要的归档文件名。</p>
+<p><strong>问：Linux 解压缩 tar.gz</strong></p>
+<p><strong>答</strong>：在 Linux 系统中，你可以使用 <code>tar</code> 命令来解压 <code>.tar.gz</code> 文件。以下是具体的命令：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xzf archive.tar.gz</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中，<code>-xzf</code> 是 <code>tar</code> 命令的选项：</p>
+<ul>
+<li><code>-x</code> 表示解压。</li>
+<li><code>-z</code> 表示解压的文件是 gzip 格式的。</li>
+<li><code>-f</code> 表示后面跟着的是要解压的文件名。</li>
+</ul>
+<p>这个命令会将 <code>archive.tar.gz</code> 文件解压到当前目录。如果你想将文件解压到其他目录，你可以使用 <code>-C</code> 选项 followed by the directory path. For example:</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -xzf archive.tar.gz -C /path/to/your/directory</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会将 <code>archive.tar.gz</code> 文件解压到 <code>/path/to/your/directory</code> 目录。</p>
+<p>请将 <code>archive.tar.gz</code> 和 <code>/path/to/your/directory</code> 替换为你实际的文件名和目录路径。</p>
+<p><strong>问：查看 Linux 系统安装了哪些软件</strong></p>
+<p><strong>答</strong>：在 Linux 系统中，你可以使用包管理器来查看已安装的软件包。不同的 Linux 发行版可能使用不同的包管理器。以下是一些常见的包管理器和相应的命令：</p>
+<ul>
+<li><p>在使用 <code>apt</code> 的系统（如 Ubuntu、Debian）中，你可以使用以下命令：</p>
+  <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dpkg --get-selections</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在使用 <code>yum</code> 的系统（如 CentOS、RHEL）中，你可以使用以下命令：</p>
+  <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list installed</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在使用 <code>dnf</code> 的系统（如 Fedora）中，你可以使用以下命令：</p>
+  <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dnf list installed</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p>在使用 <code>pacman</code> 的系统（如 Arch Linux）中，你可以使用以下命令：</p>
+  <figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pacman -Q</span><br></pre></td></tr></tbody></table></figure></li>
+</ul>
+<p>这些命令会列出你的系统中已安装的所有软件包。如果你只想查找特定的软件包，你可以将这些命令的输出通过 <code>grep</code> 命令进行过滤。例如，以下命令会查找所有包含 <code>python</code> 的软件包：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dpkg --get-selections | grep python</span><br></pre></td></tr></tbody></table></figure>
+
+<p><strong>问：有些软件是 deinstall 是什么意思</strong></p>
+<p><strong>答</strong>：在使用 <code>dpkg --get-selections</code> 命令查看已安装软件包时，你可能会看到某些软件包的状态被标记为 <code>deinstall</code>。</p>
+<p><code>deinstall</code> 状态表示该软件包已被标记为待卸载，但其配置文件仍保留在系统中。这意味着虽然软件包的可执行文件和库已被删除，但其配置文件仍然存在。如果你在后续重新安装该软件包，这些配置文件将会被重用。</p>
+<p>如果你想完全删除一个软件包，包括其配置文件，你可以使用 <code>apt-get purge</code> 命令（在使用 <code>apt</code> 的系统中）或 <code>yum remove</code> 命令并加上 <code>--remove-leaves</code> 选项（在使用 <code>yum</code> 的系统中）。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get purge packagename</span><br></pre></td></tr></tbody></table></figure>
+
+<p>请将 <code>packagename</code> 替换为你想要删除的软件包的名称。</p>
+<p><strong>问：Linux 查看文件详情</strong></p>
+<p><strong>答</strong>：在Linux中，你可以使用<code>ls</code>命令的<code>-l</code>选项来查看文件的详细信息。例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> -l filename</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示<code>filename</code>的详细信息，包括：</p>
+<ul>
+<li>文件类型和权限</li>
+<li>链接数</li>
+<li>文件所有者</li>
+<li>文件所属的组</li>
+<li>文件大小</li>
+<li>最后修改时间</li>
+<li>文件名</li>
+</ul>
+<p>你可以替换<code>filename</code>为你实际要查看的文件的名称。</p>
+<p>此外，你还可以使用<code>file</code>命令来查看文件的类型，例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">file filename</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示<code>filename</code>的类型。</p>
+<p>你还可以使用<code>stat</code>命令来查看文件的所有状态信息，包括文件的大小、块数、inode号、权限、所有者、组、设备、硬链接数、最后访问时间、最后修改时间、最后状态改变时间等，例如：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">stat</span> filename</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会显示<code>filename</code>的所有状态信息。</p>
+<hr>
+<figure class="highlight plaintext"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">  File: filekey.bin</span><br><span class="line">  Size: 1048576         Blocks: 2048       IO Block: 4096   regular file</span><br><span class="line">Device: fc03h/64515d    Inode: 270696      Links: 1</span><br><span class="line">Access: (0664/-rw-rw-r--)  Uid: ( 1000/   admin)   Gid: ( 1000/   admin)</span><br><span class="line">Access: 2024-02-14 11:22:43.321543138 +0800</span><br><span class="line">Modify: 2024-02-14 11:22:43.321543138 +0800</span><br><span class="line">Change: 2024-02-14 11:22:43.321543138 +0800</span><br><span class="line"> Birth: 2024-02-14 11:22:43.321543138 +0800</span><br></pre></td></tr></tbody></table></figure>
+
+<p>解释：这是Linux中<code>stat</code>命令的输出，表示<code>filekey.bin</code>文件的详细状态信息。每一部分的含义如下：</p>
+<ul>
+<li><p><code>File: filekey.bin</code>：这是文件的名称。</p>
+</li>
+<li><p><code>Size: 1048576</code>：这是文件的大小，单位是字节。这里是<code>1048576</code>，表示文件大小是1MB（1024*1024字节）。</p>
+</li>
+<li><p><code>Blocks: 2048</code>：这是文件占用的磁盘块数。一个块通常包含512字节。</p>
+</li>
+<li><p><code>IO Block: 4096</code>：这是文件系统的I/O块大小。这是文件系统进行数据读写的单位。</p>
+</li>
+<li><p><code>Device: fc03h/64515d</code>：这是包含文件的设备的设备号。</p>
+</li>
+<li><p><code>Inode: 270696</code>：这是文件的inode号。在Unix和Linux系统中，inode是文件系统中的一个数据结构，用于存储文件的元数据。</p>
+</li>
+<li><p><code>Links: 1</code>：这是文件的硬链接数。硬链接是文件系统中的一个引用，指向文件的物理位置。</p>
+</li>
+<li><p><code>Access: (0664/-rw-rw-r--)  Uid: ( 1000/   admin)   Gid: ( 1000/   admin)</code>：这是文件的权限、所有者和所属组。<code>0664</code>是文件权限的八进制表示，<code>-rw-rw-r--</code>是文件权限的符号表示，<code>Uid: ( 1000/   admin)</code>是文件所有者的用户ID和用户名，<code>Gid: ( 1000/   admin)</code>是文件所属组的组ID和组名。</p>
+</li>
+<li><p><code>Access: 2024-02-14 11:22:43.321543138 +0800</code>：这是文件最后访问的时间。</p>
+</li>
+<li><p><code>Modify: 2024-02-14 11:22:43.321543138 +0800</code>：这是文件最后修改的时间。</p>
+</li>
+<li><p><code>Change: 2024-02-14 11:22:43.321543138 +0800</code>：这是文件状态最后改变的时间。</p>
+</li>
+<li><p><code>Birth: 2024-02-14 11:22:43.321543138 +0800</code>：这是文件的创建时间。注意，并非所有的文件系统都支持记录文件的创建时间。</p>
+</li>
+</ul>
+<p><strong>问：Linux 压缩命令</strong></p>
+<p><strong>答</strong>：在Linux中，有多种命令可以用来压缩和解压缩文件。以下是一些常用的压缩命令：</p>
+<ol>
+<li><p><strong>gzip</strong>：这是一个常用的压缩工具，它使用GZIP算法。你可以使用<code>gzip filename</code>来压缩一个文件，使用<code>gunzip filename.gz</code>来解压缩一个文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gzip filename</span><br><span class="line">gunzip filename.gz</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>bzip2</strong>：这是另一个压缩工具，它使用BZIP2算法，通常可以提供比GZIP更好的压缩率。你可以使用<code>bzip2 filename</code>来压缩一个文件，使用<code>bunzip2 filename.bz2</code>来解压缩一个文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bzip2 filename</span><br><span class="line">bunzip2 filename.bz2</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>zip/unzip</strong>：这是一对用来创建和解压缩ZIP文件的命令。你可以使用<code>zip archive.zip filename</code>来创建一个ZIP文件，使用<code>unzip archive.zip</code>来解压缩一个ZIP文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zip archive.zip filename</span><br><span class="line">unzip archive.zip</span><br></pre></td></tr></tbody></table></figure>
+</li>
+<li><p><strong>tar</strong>：这是一个用来创建和解压缩tar文件的命令。虽然tar本身不提供压缩功能，但是它可以与gzip或bzip2等压缩工具一起使用。你可以使用<code>tar czf archive.tar.gz filename</code>来创建一个GZIP压缩的tar文件，使用<code>tar xzf archive.tar.gz</code>来解压缩一个tar文件。</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar czf archive.tar.gz filename</span><br><span class="line">tar xzf archive.tar.gz</span><br></pre></td></tr></tbody></table></figure></li>
+</ol>
+<p>这些只是一些基本的压缩命令，实际上每个命令都有许多选项和参数可以用来调整它的行为。你可以使用<code>man</code>命令来查看每个命令的详细信息，例如<code>man gzip</code>。</p>
+<p><strong>问：服务器重置用户密码</strong></p>
+<p><strong>答</strong>：在Linux服务器上，你可以使用<code>passwd</code>命令来更改用户的密码。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo passwd username</span><br></pre></td></tr></tbody></table></figure>
+
+<p>在这个命令中：</p>
+<ul>
+<li><code>sudo</code>是一个命令，用于以超级用户的权限运行命令。更改用户的密码通常需要超级用户的权限。</li>
+<li><code>passwd</code>是一个命令，用于更改用户的密码。</li>
+<li><code>username</code>是你要更改密码的用户的用户名。你应该将它替换为实际的用户名。</li>
+</ul>
+<p>运行这个命令后，你会被提示输入新的密码。你应该输入一个强密码，然后确认。</p>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的命令。如果你不是超级用户，你可能需要联系你的系统管理员来更改密码。</p>
+<p><strong>问：如何查看 Linux 有多少个用户</strong></p>
+<p><strong>答</strong>：在Linux中，你可以通过查看<code>/etc/passwd</code>文件来查看系统中的所有用户。<code>/etc/passwd</code>文件包含了系统中每个用户的信息。你可以使用<code>cat</code>或<code>less</code>命令来查看这个文件的内容。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/passwd</span><br></pre></td></tr></tbody></table></figure>
+
+<p>每一行代表一个用户，字段之间由冒号分隔。第一个字段是用户名。</p>
+<p>如果你只想知道用户的数量，你可以使用<code>wc</code>命令来计数。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/passwd | <span class="built_in">wc</span> -l</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会输出<code>/etc/passwd</code>文件中的行数，也就是用户的数量。</p>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的命令。</p>
+<p><strong>问：如何在Linux中列出当前登录的用户？</strong></p>
+<p><strong>答</strong>：在Linux中，你可以使用<code>who</code>命令来列出当前登录的用户。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">who</span></span><br></pre></td></tr></tbody></table></figure>
+
+<p><code>who</code>命令会显示每个登录用户的用户名、终端名、登录时间等信息。</p>
+<p>如果你只想看到用户名，你可以使用<code>who</code>命令的<code>-q</code>选项。以下是一个示例：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">who</span> -q</span><br></pre></td></tr></tbody></table></figure>
+
+<p>这个命令会只显示登录用户的用户名。</p>
+<p>注意，这只是一个示例。实际使用时，你应该根据你的具体需求和环境选择合适的命令。</p>
+
+  </article>
+  <!-- tag -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/AI%E7%94%9F%E6%88%90/">AI生成</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/linux/">linux</a>
+        </span>
+      
+    
+  </div>
+  <!-- prev and next -->
+  <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
+    <div>
+      
+        <a href="/2024/02/28/OpenSSL-%E7%AE%80%E5%8D%95%E5%85%A5%E9%97%A8/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
+          OpenSSL 简单入门
+        </a>
+      
+    </div>
+    <div>
+      
+    </div>
+  </div>
+  <!-- comment -->
+  <div class="article-comments mt-12">
+    
+
+  </div>
+</section>
+<!-- js inspect -->
+
+<script src="/lib/clipboard.min.js"></script>
+
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+  $(document).ready(() => {
+    const maraidConfig = {
+      theme: "default",
+      logLevel: 3,
+      flowchart: { curve: "linear" },
+      gantt: { axisFormat: "%m/%d/%Y" },
+      sequence: { actorMargin: 50 },
+    };
+    mermaid.initialize(maraidConfig);
+  });
+</script>
+
+
+
+<script src="/lib/fancybox/fancybox.umd.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+    $('.post-content').each(function(i){
+      $(this).find('img').each(function(){
+        if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        var alt = this.alt;
+        if (alt) $(this).after('<span class="fancybox-alt">' + alt + '</span>');
+        $(this).wrap('<a class="fancybox-img" href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
+      });
+      $(this).find('.fancybox').each(function(){
+        $(this).attr('rel', 'article' + i);
+      });
+    });
+
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // options
+    })
+  })
+</script>
+
+<!-- tocbot begin -->
+
+<script src="/lib/tocbot/tocbot.min.js"></script>
+
+<script>
+  $(document).ready(() => {
+      tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.post-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.post-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+        // For headings inside relative or absolute positioned containers within content.
+        hasInnerContainers: true,
+    });
+  })
+</script>
+<!-- tocbot end -->
+
+
+  </main>
+  <footer class="flex flex-col h-40 items-center justify-center text-gray-400 text-sm">
+  <!-- busuanzi -->
+  
+  <!-- FILEPATH: /D:/workspace/myblog/themes/maple/layout/_partial/footer.ejs -->
+  <!-- BEGIN: ed8c6549bwf9 -->
+  <!-- share button -->
+  <div class="flex items-center gap-2">
+    <span>Share:</span>
+    <a href="https://www.facebook.com/sharer.php?u=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook"></i> Facebook</a>
+    <a href="https://twitter.com/intent/tweet?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
+    <a href="https://www.linkedin.com/shareArticle?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    <a href="https://t.me/share/url?url=http://example.com" target="_blank" rel="noopener noreferrer"><i class="fab fa-telegram"></i> Telegram</a>
+  </div>
+
+  <!-- copyright -->
+  <div class="flex items-center gap-2">
+    <span>© 2024</span>
+    <a href="mailto:mylinkmail@foxmail.com" rel="noopener noreferrer">📫</a>
+  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Buttons</title>
+    
+    <!-- 引入 Font Awesome 图标样式 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <style>
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .gap-2 {
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    
+    <!-- 脚本 -->
+    <script>
+      var currentUrl = window.location.href;
+      document.querySelector('a[href="https://www.facebook.com/sharer.php?u=http://example.com"]').href = 'https://www.facebook.com/sharer.php?u=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://twitter.com/intent/tweet?url=http://example.com"]').href = 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://www.linkedin.com/shareArticle?url=http://example.com"]').href = 'https://www.linkedin.com/shareArticle?url=' + encodeURIComponent(currentUrl);
+      document.querySelector('a[href="https://t.me/share/url?url=http://example.com"]').href = 'https://t.me/share/url?url=' + encodeURIComponent(currentUrl);
+    </script>
+  </body>
+  </html>
+  <!-- END: ed8c6549bwf9 -->
+</html>
+  <!-- powered by -->
+  <div class="flex items-center gap-2">
+    <span>Powered by</span>
+    <a href="https://hexo.io/" target="_blank" rel="noopener noreferrer">Hexo</a>
+    <span>&</span>
+    <a href="https://github.com/xbmlz/hexo-theme-maple" target="_blank" rel="noopener noreferrer">Maple</a>
+  </div>
+</footer>
+
+  <div class="back-to-top box-border fixed right-6 z-1024 -bottom-20 rounded py-1 px-1 bg-slate-900 opacity-60 text-white cursor-pointer text-center dark:bg-slate-600">
+    <span class="flex justify-center items-center text-sm">
+      <iconify-icon width="18" icon="ion:arrow-up-c" id="go-top"></iconify-icon>
+      <span id="scrollpercent"><span>0</span> %</span>
+    </span>
+  </div>
+  
+<script src="/js/main.js"></script>
+
+
+  <script>
+    $(document).ready(function () {
+      const mapleCount = "0";
+      const speed = "0.5";
+      const mapleEl = document.getElementById("maple");
+      const maples = Array.from({ length: mapleCount }).map(() => {
+        const maple = document.createElement("div");
+        const scale = Math.random() * 0.5 + 0.5;
+        const offset = Math.random() * 2 - 1;
+        const x = Math.random() * mapleEl.clientWidth;
+        const y = -Math.random() * mapleEl.clientHeight;
+        const duration = 10 / speed;
+        const delay = -duration;
+        maple.className = "maple";
+        maple.style.width = `${24 * scale}px`;
+        maple.style.height = `${24 * scale}px`;
+        maple.style.left = `${x}px`;
+        maple.style.top = `${y}px`;
+        maple.style.setProperty("--maple-fall-offset", offset);
+        maple.style.setProperty("--maple-fall-height", `${Math.abs(y) + mapleEl.clientHeight}px`);
+        maple.style.animation = `fall ${duration}s linear infinite`;
+        maple.style.animationDelay = `${delay}s`;
+        mapleEl.appendChild(maple)
+        return maple
+      })
+    });
+  </script>
+  
+
+
+  <div class="fixed top-0 bottom-0 left-0 right-0 pointer-events-none print:hidden" id="maple"></div>
+</body>
+
+</html>
